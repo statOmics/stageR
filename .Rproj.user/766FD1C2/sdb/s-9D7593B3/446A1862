@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "\n#' Create stageR object\n#'\n#' Constructor function for \\code{\\link{stageRClass}}. A stageR class is a class used for stage-wise analysis in high throughput settings.\n#' In its most basic form, it consists of a vector of p-values for the screening hypothesis and a matrix of p-values for the confirmation hypotheses.\n#'\n#' @param pScreen A vector of screening hypothesis p-values.\n#' @param pConfirmation A matrix of confirmation hypothesis p-values. The number of rows should be equal to the length of \\code{pScreen}.\n#' @param pScreenAdjusted logical, indicating whether the supplied p-values for the screening hypothesis have already been adjusted for multiplicity according to the FDR.\n#' @return An instance of an object of the \\code{\\link{stageRClass}}\n#' @references Van den Berge K., Soneson C., Robinson M.D., Clement L.\n#' @examples\n#' # create a \\code{\\link{stageRClass}} object\n#' stageRObj <- buildStageR(pScreen=runif(10), pConfirmation=matrix(runif(30),nrow=10,ncol=3))\n#' @name buildStageR\n#' @rdname buildStageR\nbuildStageR <- function(pScreen, pConfirmation, pScreenAdjusted=FALSE)\n{\n  stageR <- new(\"stageR\")\n  stageR@pScreen <- pScreen\n  stageR@pConfirmation <- pConfirmation\n  stageR@pScreenAdjusted <- pScreenAdjusted\n  return(stageR)\n}\n",
+    "created" : 1482360834305.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1436631847",
+    "id" : "446A1862",
+    "lastKnownWriteTime" : 1482360845,
+    "last_content_update" : 1482360845153,
+    "path" : "~/Dropbox/PhD/Research/stageWiseTesting/stageR/stageR/R/constructors.R",
+    "project_path" : "R/constructors.R",
+    "properties" : {
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

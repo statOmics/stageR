@@ -1,0 +1,298 @@
+#' @include stageRClasses.R allGenerics.R
+
+
+.stageWiseTest <- function(pScreen, pConfirmation, alpha, method=c("none","holm","dte","dtu","user"), adjustment=NULL, tx2gene=NULL, pScreenAdjusted){
+    method <- match.arg(method,c("none","holm","dte","dtu","user"))
+
+        if(method=="none"){
+
+          if(!pScreenAdjusted) padjScreen <- p.adjust(pScreen,"BH") else padjScreen <- pScreen
+          genesStageI <- padjScreen<alpha
+	        pAdjConfirmation <- matrix(1,nrow=nrow(pConfirmation),ncol=ncol(pConfirmation), dimnames=list(c(rownames(pConfirmation)),colnames(pConfirmation)))
+	        pAdjConfirmation[genesStageI,] <- pConfirmation[genesStageI,]
+	        padjScreenReturn=padjScreen
+
+    } else if(method=="holm"){
+
+      if(!pScreenAdjusted) padjScreen <- p.adjust(pScreen,"BH") else padjScreen <- pScreen
+      genesStageI <- padjScreen<alpha
+      padjScreenReturn=padjScreen
+	## only do correction for genes that passed the screening stage
+	pAdjConfirmation <- matrix(1,nrow=nrow(pConfirmation),ncol=ncol(pConfirmation), dimnames=list(c(rownames(pConfirmation)),colnames(pConfirmation)))
+
+	pAdjConfirmation[genesStageI,] <- t(sapply(1:length(which(genesStageI)), function(i){
+	  row <- pConfirmation[which(genesStageI)[i],]
+		# Holm correction conditional on passing the screening stage.
+		o <- order(row)
+		n <- length(row)
+		# Holm adjustment: passing screening stage implies 1 false hypothesis
+		adjustment <- c(n-1,(n-1):1)
+		rowAdjusted <- row[o]*adjustment
+		rowAdjusted <- pmin(rowAdjusted,1)
+		rowAdjusted <- cummax(rowAdjusted)
+		rowBack <- vector(length=length(row))
+		rowBack[o] <- rowAdjusted
+		rowBack
+}))
+
+    } else if(method=="user" && length(adjustment)==ncol(pConfirmation)){
+
+    if(!pScreenAdjusted) padjScreen <- p.adjust(pScreen,"BH") else padjScreen <- pScreen
+    genesStageI <- padjScreen<alpha
+    padjScreenReturn=padjScreen
+	pAdjConfirmation <- matrix(1,nrow=nrow(pConfirmation),ncol=ncol(pConfirmation), dimnames=list(c(rownames(pConfirmation)),colnames(pConfirmation)))
+	pAdjConfirmation[genesStageI,] <- t(sapply(1:length(which(genesStageI)), function(i){
+	  row <- pConfirmation[which(genesStageI)[i],]
+		  o <- order(row)
+		  rowAdjusted <- row[o]*adjustment
+		  rowAdjusted <- pmin(rowAdjusted,1)
+		  # check monotone increase of adjusted p-values
+		  rowAdjusted <- cummax(rowAdjusted)
+		  rowBack <- vector(length=length(row))
+		  rowBack[o] <- rowAdjusted
+		  rowBack
+	}))
+
+    } else if(method=="dte"){
+
+      if(any(is.na(match(rownames(pConfirmation),tx2gene[,1])))) stop("not all transcript names in pConfirmation match with a transcript ID from the tx2gene object.")
+      if(any(is.na(match(names(pScreen),tx2gene[,2])))) stop("not all gene names in pScreen match with a gene ID from the tx2gene object.")
+      # adjust screening
+      if(!pScreenAdjusted) padjScreen <- p.adjust(pScreen,"BH") else padjScreen <- pScreen
+      genesStageI <- padjScreen<=alpha
+      significantGenes <- names(padjScreen)[genesStageI]
+      geneForEachTx <- tx2gene[match(rownames(pConfirmation),tx2gene[,1]),2]
+      txLevelAdjustments <- sapply(significantGenes,function(gene){
+        id <- which(geneForEachTx %in% gene)
+        row <- pConfirmation[id,]
+        o <- order(row)
+        n <- length(row)
+        # DTE adjustment: passing screening stage implies 1 false hypothesis
+        if(n==1) adjustment=0 else adjustment=c(n-1,(n-1):1)
+        rowAdjusted <- row[o]*adjustment
+        rowAdjusted <- pmin(rowAdjusted,1)
+        rowAdjusted <- cummax(rowAdjusted)
+        rowBack <- vector(length=length(row))
+        rowBack[o] <- rowAdjusted
+        names(rowBack) <- names(row)
+        rowBack
+      })
+      pAdjConfirmation <- matrix(1,nrow=nrow(pConfirmation),ncol=1)
+      rownames(pAdjConfirmation) <- paste0(geneForEachTx,".",rownames(pConfirmation))
+      # adjusted p-values for screening hypothesis
+      padjScreenReturn <- padjScreen[geneForEachTx]
+      # adjusted p-values for confirmation hypothesis
+      pAdjConfirmation[names(unlist(txLevelAdjustments)),1] = unlist(txLevelAdjustments)
+
+    } else if(method=="dtu"){
+
+      if(any(is.na(match(rownames(pConfirmation),tx2gene[,1])))) stop("not all transcript names in pConfirmation match with a transcript ID from the tx2gene object.")
+      if(any(is.na(match(names(pScreen),tx2gene[,2])))) stop("not all gene names in pScreen match with a gene ID from the tx2gene object.")
+      # adjust screening
+      if(!pScreenAdjusted) padjScreen <- p.adjust(pScreen,"BH") else padjScreen <- pScreen
+      genesStageI <- padjScreen<=alpha
+      significantGenes <- names(padjScreen)[genesStageI]
+      geneForEachTx <- tx2gene[match(rownames(pConfirmation),tx2gene[,1]),2]
+      #geneForEachTx <- as.character(tx2gene[match(as.character(tx2gene[,1]),rownames(pConfirmation)),2])
+      txLevelAdjustments <- sapply(significantGenes,function(gene){
+        id <- which(geneForEachTx %in% gene)
+        row <- pConfirmation[id,]
+        o <- order(row)
+        n <- length(row)
+        # DTU adjustment: passing screening stage implies 2 false hypotheses
+        if(n==2) adjustment=c(0,0) else adjustment=c(n-2,n-2,(n-2):1)
+        rowAdjusted <- row[o]*adjustment
+        rowAdjusted <- pmin(rowAdjusted,1)
+        rowAdjusted <- cummax(rowAdjusted)
+        rowBack <- vector(length=length(row))
+        rowBack[o] <- rowAdjusted
+        names(rowBack) <- names(row)
+        rowBack
+      })
+      pAdjConfirmation <- matrix(1,nrow=nrow(pConfirmation),ncol=1)
+      rownames(pAdjConfirmation) <- paste0(geneForEachTx,".",rownames(pConfirmation))
+      # adjusted p-values for screening hypothesis
+      padjScreenReturn <- padjScreen[as.character(geneForEachTx)]
+      # adjusted p-values for confirmation hypothesis
+      pAdjConfirmation[names(unlist(txLevelAdjustments)),1] = unlist(txLevelAdjustments)
+
+    } else stop("method must be either one of 'holm' or ... ")
+
+    #padjScreenOrdered <- padjScreen[geneOrder]
+    alphaAdjusted <- sum(padjScreen<=alpha)/length(padjScreen)*alpha
+    pAdjStage <- cbind(padjScreenReturn,pAdjConfirmation)
+    colnames(pAdjStage)[1] <- "padjScreen"
+    if(method %in% c("dte","dtu")){
+      pAdjStage=cbind(pAdjConfirmation,padjScreenReturn)[,2:1]
+      colnames(pAdjStage) = c("gene","transcript")
+      }
+    return(list(pAdjStage=pAdjStage, alphaAdjusted=alphaAdjusted))
+    #padjScreenOrdered <- padjScreen[geneOrder]
+    #alphaAdjusted <- (1:length(padjScreenOrdered))/length(padjScreenOrdered)*alpha
+    #pListAll <- cbind(padjScreenOrdered,alphaAdjusted,pAdjList[geneOrder,])
+    #return(pListAll)
+}
+
+.getAdjustedP <- function(object, onlySignificantGenes=FALSE){
+	if(onlySignificantGenes){
+	  warning(paste0("the returned adjusted p-values are based on a stage-wise testing approach and should be compared to the adjusted alpha level of "),round(adjustedAlphaLevel(object),6),", as returned by the 'getAdjustedAlphaLevel' function.")
+	    genesStageI <- object@adjustedP[,1]<=object@alpha
+	    if(sum(genesStageI)==0){ message(paste0("No genes were found to be significant on a ",alpha*100,"% OFDR level.")) } else{
+	    return(object@adjustedP[genesStageI,])}
+	} else {
+	    return(object@adjustedP)
+	}
+}
+
+
+.getResults <- function(object){
+    results=matrix(0,nrow=nrow(object@adjustedP),ncol=ncol(object@adjustedP), dimnames=dimnames(object@adjustedP))
+    results[object@adjustedP[,1]<=object@alpha,1] = 1
+    results[,-1][which(object@adjustedP[,-1]<=object@alphaAdjusted)] = 1
+    return(results)
+}
+
+
+#' adjust p-values in a two-stage analysis
+#'
+#' This function will adjust p-values according to a hierarchical two-stage testing paradigm.
+#'
+#' @param object an object of the \code{\link{stageRClass}} class.
+#' @param method Character string indicating the method used for FWER correction in the confirmation stage of the stage-wise analysis. Can be any of \code{"none"}, \code{"holm"}, \code{"dte"}, \code{"dtu"}, \code{"user"}. \code{"none"} will not adjusted the p-values in the confirmation stage. \code{"holm"} is an adapted Holm procedure for a stage-wise analysis, where the method takes into account the fact that genes in the confirmation stage have already passed the screening stage, hence the procedure will be more powerful for the most significant p-value as compared to the standard Holm procedure. \code{"dte"} is the adjusted Holm-Shaffer procedure for differential transcript expression analysis. \code{"dtu"} is the adjusted Holm-Shaffer procedure for differential transcript usage. \code{"user"} indicates a user-defined adjustment that should be specified with the \code{adjustment} argument.
+#' @param alpha the OFDR on which to control the two-stage analysis.
+#' @param adjustment a user-defined adjustment of the confirmation stage p-values. Only applicable when \code{method} is \code{"none"} and ignored otherwise.
+#' @param tx2gene Only applicable when  \code{method} is \code{"dte"} or \code{"dtu"}.  A \code{\link[base]{data.frame}} with transcript IDs in the first columns and gene IDs in the second column. The rownames from \code{pConfirmation} must be contained in the transcript IDs from \code{tx2gene}, and the names from \code{pScreen} must be contained in the gene IDs.
+#' @references
+#' Van den Berge K., Soneson C., Robinson M.D., and Clement L, "A generic stage-wise testing procedure for differential expression and differential transcript usage." To be submitted.
+#' R. Heller, E. Manduchi, G. R. Grant, and W. J. Ewens, “A flexible two-stage procedure for identifying gene sets that are differentially expressed.” Bioinformatics (Oxford, England), vol. 25, pp. 1019–25, apr 2009.
+#' S. Holm, “A Simple Sequentially Rejective Multiple Test Procedure,” Scandinavian Journal of Statistics, vol. 6, no. 2, pp. 65–70, 1979.
+#' J. P. Shaffer, “Modified Sequentially Rejective Multiple Test Procedures,” Journal of the American Statistical Asso- ciation, vol. 81, p. 826, sep 1986.
+#' @examples
+#' pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
+#' stageRObj <- buildStageR(pScreen=pScreen, pConfirmation=matrix(runif(3000),nrow=1000,ncol=3))
+#' adjustedP <- stageWiseAdjustment(stageRObj, method="holm", alpha=0.05)
+#' getAdjustedPValues(adjustedP, onlySignificantGenes=TRUE)
+#' @name stageWiseAdjustment
+#' @rdname stageWiseAdjustment
+setMethod("stageWiseAdjustment",signature=signature(object="stageR", method="character", alpha="numeric"),
+	  definition=function(object, method, alpha, ...){
+	      pScreen=object@pScreen
+	      pConfirmation=object@pConfirmation
+	      pScreenAdjusted=object@pScreenAdjusted
+	      stageAdjPValues <- .stageWiseTest(pScreen=pScreen, pConfirmation=pConfirmation, alpha=alpha, method=method,  pScreenAdjusted=pScreenAdjusted, ...)
+	      object@adjustedP <- stageAdjPValues[["pAdjStage"]]
+	      object@alphaAdjusted <- stageAdjPValues[["alphaAdjusted"]]
+	      object@method <- method
+	      object@alpha <- alpha
+	      return(object)
+	  })
+
+#' Return screening hypothesis p-values from a \code{\link{stageRClass}} object.
+#'
+#' @param object an object of the \code{\link{stageRClass}} class.
+#' @examples
+#' stageRObj <- buildStageR(pScreen=seq(1e-4,.5,length.out=1000), pConfirmation=matrix(runif(3000),nrow=1000,ncol=3))
+#' getPScreen(stageRObj)
+#' @name getPScreen
+#' @rdname getPScreen
+setMethod("getPScreen",signature=signature(object="stageR"),
+	  definition=function(object){return(object@pScreen)})
+
+#' Return unadjusted confirmation hypothesis p-values from a \code{\link{stageRClass}} object.
+#'
+#' @param object an object of the \code{\link{stageRClass}} class.
+#' @examples
+#' stageRObj <- buildStageR(pScreen=seq(1e-4,.5,length.out=1000), pConfirmation=matrix(runif(3000),nrow=1000,ncol=3))
+#' getPConfirmation(stageRObj)
+#' @name getPConfirmation
+#' @rdname getPConfirmation
+setMethod("getPConfirmation",signature=signature(object="stageR"),
+	  definition=function(object){return(object@pConfirmation)})
+
+#' Retrieve the stage-wise adjusted p-values.
+#'
+#' This functions returns the stage-wise adjusted p-values for an object from the  \code{\link{stageRClass}} class. Note, that the p-values should have been adjusted with the \code{\link{stageWiseAdjustment}} function prior to calling this function.
+#'
+#' @param object an object of the \code{\link{stageRClass}} class.
+#' @details
+#' The function returns FDR adjusted p-values for the screening hypothesis and stage-wise adjusted p-values for the confirmation hypothesis p-values. For features that were not significant in the screening hypothesis, the confirmation stage adjusted p-values are set to 1.
+#' @examples
+#' pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
+#' stageRObj <- buildStageR(pScreen=pScreen, pConfirmation=matrix(runif(3000),nrow=1000,ncol=3))
+#' adjustedP <- stageWiseAdjustment(stageRObj, method="holm", alpha=0.05)
+#' getAdjustedPValues(adjustedP)
+#' @name getAdjustedPValues
+#' @rdname getAdjustedPValues
+setMethod("getAdjustedPValues",signature=signature(object="stageR"),
+	  definition=function(object, ...){
+	      return(.getAdjustedP(object=object, ...))
+	  })
+
+#' Get adjusted significance level from the screening stage.
+#'
+#' This functions returns the adjusted significance level from the screening stage that should be used to compare confirmation stage FWER adjusted p-values to.
+#'
+#' @param object an object of the \code{\link{stageRClass}} class.
+#' @details
+#' The adjusted significance level is calculated as the fraction of significant features in the screening stage times the alpha level.
+#' @examples
+#' pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
+#' stageRObj <- buildStageR(pScreen=pScreen, pConfirmation=matrix(runif(3000),nrow=1000,ncol=3))
+#' adjustedP <- stageWiseAdjustment(stageRObj, method="holm", alpha=0.05)
+#' adjustedAlphaLevel(adjustedP)
+#' @name adjustedAlphaLevel
+#' @rdname adjustedAlphaLevel
+setMethod("adjustedAlphaLevel",signature=signature(object="stageR"),
+	  definition=function(object){return(object@alphaAdjusted)})
+
+#' Get significance results accroding to a stage-wise analysis.
+#'
+#' This functions returns a matrix that indicates whether a specific feature is significant for a specific hypothesis of interest according to a stage-wise analysis.
+#'
+#' @param object an object of the \code{\link{stageRClass}} class.
+#' @details
+#' The FDR adjusted screening hypothesis p-values are compared to the alpha level specified. The FWER adjusted confirmation stage p-values are compared to the adjusted significance level from the screening stage.
+#' @examples
+#' pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
+#' stageRObj <- buildStageR(pScreen=pScreen, pConfirmation=matrix(runif(3000),nrow=1000,ncol=3))
+#' adjustedP <- stageWiseAdjustment(stageRObj, method="holm", alpha=0.05)
+#' head(getResults(adjustedP))
+#' @name getResults
+#' @rdname getResults
+setMethod("getResults",signature=signature(object="stageR"),
+	  definition=function(object){ return(.getResults(object)) })
+
+#' Return significant genes when performing transcript level analysis.
+#'
+#' This functions returns a matrix with significant genes by aggregated testing of its respective transcripts.
+#'
+#' @param object an object of the \code{\link{stageRClass}} class.
+#' @examples
+#' #make identifiers linking transcripts to genes
+#' set.seed(1)
+#' genes=paste0("gene",sample(1:200,1000,replace=TRUE))
+#' nGenes=length(table(genes))
+#' transcripts=paste0("tx",1:1000)
+#' tx2gene=data.frame(transcripts,genes)
+#' #gene-wise q-values
+#' pScreen=c(seq(1e-10,1e-2,length.out=nGenes-100),seq(1e-2,.2,length.out=50),seq(50))
+#' names(pScreen)=names(table(genes)) #discards genes that are not simulated
+#' pConfirmation=matrix(runif(1000),nrow=1000,ncol=1)
+#' rownames(pConfirmation)=transcripts
+#' stageRObj <- buildStageR(pScreen=pScreen, pConfirmation=pConfirmation ,pScreenAdjusted=TRUE)
+#' adjustedP <- stageWiseAdjustment(stageRObj, method="dte", alpha=0.05, tx2gene=tx2gene)
+#' head(getSignificantGenes(adjustedP))
+#' @name getSignificantGenes
+#' @rdname getSignificantGenes
+setMethod("getSignificantGenes",signature=signature(object="stageR"),
+          definition=function(object){
+            ### set control whether adjustedP slot really exists in object
+            IDs=rownames(object@adjustedP)
+            geneIDs=unlist(lapply(strsplit(IDs,split=".",fixed=TRUE),function(x) x[1]))
+            significantGeneIDs=object@adjustedP[,1]<=object@alpha
+            significantGeneNames=geneIDs[significantGeneIDs]
+            geneAdjustedPValues=object@adjustedP[significantGeneIDs,1]
+            dups=duplicated(significantGeneNames)
+            significantGenes=matrix(geneAdjustedPValues[!dups],ncol=1,dimnames=list(significantGeneNames[!dups],"FDR adjusted p-value"))
+            return(significantGenes)
+          })

@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "#' #' Transcript-level abundance estimates in 14 Chinese prostate cancer patients\n#' #'\n#' #' A dataset containing 14 matched samples of tumoral prostate cancer and normal tissue, both derived from the same Chinese patient.\n#' #'\n#' #' @format A data frame with 173259 rows and 28 variables.\n#' #' @source \\url{http://pachterlab.github.io/lair/}\n#' \"prostateData\"\n",
+    "created" : 1482524342145.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1337190799",
+    "id" : "C895EC6E",
+    "lastKnownWriteTime" : 1482832116,
+    "last_content_update" : 1482832116298,
+    "path" : "~/Dropbox/PhD/Research/stageWiseTesting/stageR/stageR/R/data.R",
+    "project_path" : "R/data.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 7,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
