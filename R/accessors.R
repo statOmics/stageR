@@ -174,6 +174,7 @@
 #' getAdjustedPValues(adjustedP, onlySignificantGenes=TRUE)
 #' @name stageWiseAdjustment
 #' @rdname stageWiseAdjustment
+#' @export
 setMethod("stageWiseAdjustment",signature=signature(object="stageR", method="character", alpha="numeric"),
 	  definition=function(object, method, alpha, ...){
 	      pScreen=object@pScreen
@@ -195,6 +196,7 @@ setMethod("stageWiseAdjustment",signature=signature(object="stageR", method="cha
 #' getPScreen(stageRObj)
 #' @name getPScreen
 #' @rdname getPScreen
+#' @export
 setMethod("getPScreen",signature=signature(object="stageR"),
 	  definition=function(object){return(object@pScreen)})
 
@@ -206,6 +208,7 @@ setMethod("getPScreen",signature=signature(object="stageR"),
 #' getPConfirmation(stageRObj)
 #' @name getPConfirmation
 #' @rdname getPConfirmation
+#' @export
 setMethod("getPConfirmation",signature=signature(object="stageR"),
 	  definition=function(object){return(object@pConfirmation)})
 
@@ -223,6 +226,7 @@ setMethod("getPConfirmation",signature=signature(object="stageR"),
 #' getAdjustedPValues(adjustedP)
 #' @name getAdjustedPValues
 #' @rdname getAdjustedPValues
+#' @export
 setMethod("getAdjustedPValues",signature=signature(object="stageR"),
 	  definition=function(object, ...){
 	      return(.getAdjustedP(object=object, ...))
@@ -242,6 +246,7 @@ setMethod("getAdjustedPValues",signature=signature(object="stageR"),
 #' adjustedAlphaLevel(adjustedP)
 #' @name adjustedAlphaLevel
 #' @rdname adjustedAlphaLevel
+#' @export
 setMethod("adjustedAlphaLevel",signature=signature(object="stageR"),
 	  definition=function(object){return(object@alphaAdjusted)})
 
@@ -259,6 +264,7 @@ setMethod("adjustedAlphaLevel",signature=signature(object="stageR"),
 #' head(getResults(adjustedP))
 #' @name getResults
 #' @rdname getResults
+#' @export
 setMethod("getResults",signature=signature(object="stageR"),
 	  definition=function(object){ return(.getResults(object)) })
 
@@ -284,6 +290,7 @@ setMethod("getResults",signature=signature(object="stageR"),
 #' head(getSignificantGenes(adjustedP))
 #' @name getSignificantGenes
 #' @rdname getSignificantGenes
+#' @export
 setMethod("getSignificantGenes",signature=signature(object="stageR"),
           definition=function(object){
             ### set control whether adjustedP slot really exists in object

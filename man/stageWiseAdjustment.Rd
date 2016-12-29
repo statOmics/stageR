@@ -23,7 +23,8 @@
 This function will adjust p-values according to a hierarchical two-stage testing paradigm.
 }
 \examples{
-stageRObj <- buildStageR(pScreen=seq(1e-4,.5,length.out=1000), pConfirmation=matrix(runif(3000),nrow=1000,ncol=3))
+pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
+stageRObj <- buildStageR(pScreen=pScreen, pConfirmation=matrix(runif(3000),nrow=1000,ncol=3))
 adjustedP <- stageWiseAdjustment(stageRObj, method="holm", alpha=0.05)
 getAdjustedPValues(adjustedP, onlySignificantGenes=TRUE)
 }

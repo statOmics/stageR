@@ -17,7 +17,8 @@ This functions returns the adjusted significance level from the screening stage 
 The adjusted significance level is calculated as the fraction of significant features in the screening stage times the alpha level.
 }
 \examples{
-stageRObj <- buildStageR(pScreen=seq(1e-6,.2,length.out=1000), pConfirmation=matrix(runif(3000),nrow=1000,ncol=3))
+pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
+stageRObj <- buildStageR(pScreen=pScreen, pConfirmation=matrix(runif(3000),nrow=1000,ncol=3))
 adjustedP <- stageWiseAdjustment(stageRObj, method="holm", alpha=0.05)
 adjustedAlphaLevel(adjustedP)
 }

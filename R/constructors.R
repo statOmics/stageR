@@ -14,6 +14,7 @@
 #' stageRObj <- buildStageR(pScreen=runif(10), pConfirmation=matrix(runif(30),nrow=10,ncol=3))
 #' @name buildStageR
 #' @rdname buildStageR
+#' @export
 buildStageR <- function(pScreen, pConfirmation, pScreenAdjusted=FALSE)
 {
   stageR <- new("stageR")

@@ -19,8 +19,9 @@ In the confirmation stage, only the genes passing the screening stage are retain
 
 ```{r,echo=FALSE,warning=FALSE}
 suppressPackageStartupMessages({library(edgeR) ; library(Biobase) ; library(limma) ; library(utils) ; library(devtools) ; library(DEXSeq)})
-devtools::load_all("~/Dropbox/PhD/Research/stageWiseTesting/stageR/stageR/")
-#library(stageR)
+#devtools::load_all("~/Dropbox/PhD/Research/stageWiseTesting/stageR/stageR/")
+install_github("statOmics/stageR",auth_token="cb649b65157aa8cd235a992d99cbe9384fd0eeb2")
+library(stageR)
 ```
 
 As a case study for differential gene expression analysis, we analyse the Hammer dataset [@Hammer2010]. We first download the expressionSet from the ReCount project [website](http://bowtie-bio.sourceforge.net/recount) [@Frazee2011].
