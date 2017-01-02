@@ -135,11 +135,12 @@
 
 .getAdjustedP <- function(object, onlySignificantGenes=FALSE){
 	if(onlySignificantGenes){
-	  warning(paste0("the returned adjusted p-values are based on a stage-wise testing approach and should be compared to the adjusted alpha level of "),round(adjustedAlphaLevel(object),6),", as returned by the 'getAdjustedAlphaLevel' function.")
+	  warning(paste0("The returned adjusted p-values are based on a stage-wise testing approach and should be compared to the adjusted alpha level of "),round(adjustedAlphaLevel(object),6),", as returned by the 'getAdjustedAlphaLevel' function.", call.=FALSE)
 	    genesStageI <- object@adjustedP[,1]<=object@alpha
 	    if(sum(genesStageI)==0){ message(paste0("No genes were found to be significant on a ",alpha*100,"% OFDR level.")) } else{
 	    return(object@adjustedP[genesStageI,])}
 	} else {
+	  warning(paste0("The returned adjusted p-values are based on a stage-wise testing approach and should be compared to the adjusted alpha level of "),round(adjustedAlphaLevel(object),6),", as returned by the 'getAdjustedAlphaLevel' function.", call.=FALSE)
 	    return(object@adjustedP)
 	}
 }

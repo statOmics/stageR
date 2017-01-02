@@ -10,16 +10,15 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-This vignette describes the stageR package that has been developed for stage-wise analysis of high throughput data. A stage-wise analysis was shown to be beneficial in terms of biological interpretation and statistical performance when multiple hypotheses per gene are of interest.
-The stage-wise analysis has been adopted from [@Heller2009] and consists of a screening stage and a confirmation stage. In the screening stage, genes are screened by calculating p-values that aggregate evidence across the different hypotheses of interest for the gene. The p-values are then adjusted for FDR control after which significance of the screening hypothesis is assessed.
-In the confirmation stage, only the genes passing the screening stage are retained. For those genes, every hypothesis of interest is assessed separately and multiple testing correction is performed within a gene according to FWER control.
-`stageR` provides an automated way to perform stage-wise testing, given p-values for the screening and confirmation stages. A number of FWER control procedures that take into account the logical relations among the hypotheses are implemented. Since the logical relations are specific to the experiment, the user can also specify an adjustment deemed appropriate.
+This vignette describes how to use the stageR package that has been developed for stage-wise analysis of high throughput gene expression data in R. A stage-wise analysis was shown to be beneficial in terms of biological interpretation and statistical performance when multiple hypotheses per gene are of interest.
+The stage-wise analysis has been adopted from [@Heller2009] and consists of a screening stage and a confirmation stage. In the screening stage, genes are screened by calculating p-values that aggregate evidence across the different hypotheses of interest for the gene. The screening p-values are then adjusted for FDR control after which significance of the screening hypothesis is assessed.
+In the confirmation stage, only genes passing the screening stage are considered for analysis. For those genes, every hypothesis of interest is assessed separately and multiple testing correction is performed across hypotheses within a gene to control the FWER on the BH adjusted significance level of the screening stage, $\alpha_I$.
+`stageR` provides an automated way to perform stage-wise testing, given p-values for the screening and confirmation stages. A number of FWER control procedures that take into account the logical relations among the hypotheses are implemented. Since the logical relations may be specific to the experiment, the user can also specify an adjustment deemed appropriate.
 
 # Differential gene expression: Hammer dataset
 
-```{r,echo=FALSE,warning=FALSE}
+```{r,echo=TRUE,warning=FALSE}
 suppressPackageStartupMessages({library(edgeR) ; library(Biobase) ; library(limma) ; library(utils) ; library(devtools) ; library(DEXSeq)})
-#devtools::load_all("~/Dropbox/PhD/Research/stageWiseTesting/stageR/stageR/")
 install_github("statOmics/stageR",auth_token="cb649b65157aa8cd235a992d99cbe9384fd0eeb2")
 library(stageR)
 ```
@@ -27,19 +26,19 @@ library(stageR)
 As a case study for differential gene expression analysis, we analyse the Hammer dataset [@Hammer2010]. We first download the expressionSet from the ReCount project [website](http://bowtie-bio.sourceforge.net/recount) [@Frazee2011].
 
 ```{r}
-#download.file("http://bowtie-bio.sourceforge.net/recount/ExpressionSets/hammer_eset.RData",destfile="~/hammer_eset.RData")
+download.file("http://bowtie-bio.sourceforge.net/recount/ExpressionSets/hammer_eset.RData",destfile="~/hammer_eset.RData")
 load("~/hammer_eset.RData")
 eset = hammer.eset ; rm(hammer.eset)
 ```
 
-The Hammer experiment investigated the effect of a spinal nerve ligation (SNL)versus a control in rats at two weeks and two months after treatment. For every time $\times$ treatment combination, 2 biological replicates were used. The hypotheses of interest are
+The Hammer experiment investigated the effect of a spinal nerve ligation (SNL) versus control samples in rats at two weeks and two months after treatment. For every time $\times$ treatment combination, 2 biological replicates were used. The hypotheses of interest are
 
  - the treatment effect at the first timepoint,
  - the treatment effect at the second timepoint and
- - assessment whether the effect of the treatment is different between the two timepoints (i.e. the treatment-time interaction) 
+ - assessing whether the effect of the treatment is different between the two timepoints (i.e. the treatment-time interaction) 
  
 We use a contrast for the differential expression at the first and second timepoint and a difference in fold change between the two timepoints, respectively. 
-Therefore we create a design matrix consisting of two timepoints, two treatments and two biological replicates in every treatment $\times$ time combination. Note there has been a typo in the phenoData, so we will correct it first.
+Therefore we create a design matrix consisting of two timepoints, two treatments and two biological replicates in every treatment $\times$ time combination. Note there has been a typo in the phenoData, so we will correct this first.
 
 ```{r}
 eset@phenoData@data$Time #typo. Will do it ourself
@@ -49,9 +48,10 @@ treat = factor(c("control","control","SNL","SNL","control","control","SNL","SNL"
 design = model.matrix(~time*treat)
 rownames(design) = paste0(time,treat,rep(1:2,4))
 colnames(design)[4] = "timeMo2xTreatSNL"
+design
 ```
 
-We perform indpendent filtering [@Bourgon2010] of the genes where we retain genes that are expressed with at least 2 counts per million in 2 samples.
+We perform indpendent filtering [@Bourgon2010] of the genes and retain genes that are expressed with at least 2 counts per million in 2 samples.
 The data is then normalised with TMM normalisation [@Robinson2010] to correct for differences in sequencing depth and RNA population between the samples.
 
 ```{r}
@@ -88,11 +88,18 @@ fit2 <- eBayes(fit2)
 res=decideTests(fit2)
 summary.TestResults(res) #nr of significant up-/downregulated genes
 colSums(summary.TestResults(res)[c(1,3),]) #total nr of significant genes
+```
+
+The conventional analysis does not find any genes that have a different effect of the treatment between the two timepoints (i.e. the interaction effect test), while many genes are differentially expressed between treatment and control within every timepoint.
+
+To get a global picture of the effect of SNL on the transcriptome, we can check how many genes are significantly altered following SNL.
+
+```{r}
 uniqueGenesRegular=which(res[,1]!=0 | res[,2]!=0 | res[,3]!=0)
 length(uniqueGenesRegular) #total nr of significant genes
 ```
 
-The conventional analysis does not find any genes that have a different effect of the treatment between the two timepoints (i.e. the interaction effect test), while many genes are differentially expressed between treatment and control within every timepoint. In total, `r length(uniqueGenesRegular)` genes are found to be differentially expressed following a spinal nerve ligation, but FDR was not controlled at the gene level so we cannot state a target FDR level together with this number.
+In total, `r length(uniqueGenesRegular)` genes are found to be differentially expressed following a spinal nerve ligation. However, FDR was only controlled at the contrast level and not at the gene level so we cannot state a target FDR level together with this number.
 
 ## Stage-wise analysis
 
@@ -100,41 +107,43 @@ The stage-wise analysis first considers an omnibus test that tests whether any o
 For the screening hypothesis, we use the `topTableF` function from the `limma` package to perform an F-test across the three contrasts. The screening hypothesis p-values are then stored in the vector `pScreen`.
 
 ```{r}
-#library(stageR)
 alpha=0.05
 nGenes=nrow(d)
 tableF = topTableF(fit2, number=nGenes, sort.by="none") #screening hypothesis
 pScreen=tableF$P.Value
 ```
 
-In the confirmation stage, every contrast is assessed separately. The confirmation stage p-values are adjusted to control the FWER across the hypotheses within a gene. The function `buildStageR` constructs an object from the `stageR` class and requires a (preferably named) vector of p-values for the screening hypothesis and a (preferably named) matrix of p-values for the different contrasts of interest. The `pScreenAdjusted` argument specifies whether the screening p-values have already been adjusted to control for the FDR.
-The function `stageWiseAdjustment` then controls the p-values according to a stage-wise analysis. The `method` argument specifies the FWER correction procedure to be used in the confirmation stage. More details on the different methods can be found in the help file for `stageWiseAdjustment`. The `alpha` argument specifies the target OFDR level that is used for controlling false positive genes over the entire stage-wise testing procedure. The adjusted p-values for genes that did not pass the screening stage are always set to $1$.
-
-
-Note that when a gene passed the screening hypothesis in the Hammer experiment, only one null hypothesis can still be true: there has to be DE at timepoint 1 or timepoint 2; if the DE only occurs on one timepoint there also exist an interaction; if DE occurs at both timepoints, the H0 of no interaction can still be true. Thus, according to Shaffer's procedure [@Shaffer1986], no FWER correction is required in the confirmation stage for this experiment. This can be specified with the `method="none"` argument.
-
+In the confirmation stage, every contrast is assessed separately. The confirmation stage p-values are adjusted to control the FWER across the hypotheses within a gene. The function `buildStageR` constructs an object from the `stageR` class and requires a (preferably named) vector of p-values for the screening hypothesis and a (preferably named) matrix of p-values for the confirmation stage with columns corresponding to the different contrasts of interest. Note that the rows correspond to features (genes) and the features should be identically sorted in `pScreen` and `pConfirmation`. The `pScreenAdjusted` argument specifies whether the screening p-values have already been adjusted according to FDR control.
 
 ```{r}
 pConfirmation=sapply(1:3,function(i) topTable(fit2, coef=i, number=nGenes, sort.by="none")$P.Value)
 dimnames(pConfirmation)=list(rownames(fit2),c("t1","t2","t1t2"))
 stageRObj <- buildStageR(pScreen=pScreen, pConfirmation=pConfirmation, pScreenAdjusted=FALSE)
+```
+
+The function `stageWiseAdjustment` then adjusts the p-values according to a stage-wise analysis. The `method` argument specifies the FWER correction procedure to be used in the confirmation stage. More details on the different methods can be found in the help file for `stageWiseAdjustment`. The `alpha` argument specifies the target OFDR level that is used for controlling the fraction of false positive genes across all rejected genes over the entire stage-wise testing procedure. The adjusted p-values for genes that did not pass the screening stage are always set to $1$.
+
+Note that when a gene passed the screening hypothesis in the Hammer experiment, only one null hypothesis can still be true: there has to be DE at timepoint 1 or timepoint 2; if the DE only occurs on one timepoint there also exist an interaction; if DE occurs at both timepoints, the H0 of no interaction can still be true. Thus, according to Shaffer's MSRB procedure [@Shaffer1986], no correction is required in the confirmation stage for this experiment to control the FWER. This can be specified with the `method="none"` argument.
+
+
+```{r}
 adjustedPSW <- stageWiseAdjustment(object=stageRObj, method="none", alpha=0.05)
 ```
 
-We can explore the results of the stage-wise analysis by querying the object returned by `stageWiseAdjustment`. *Note that the confirmation stage adjusted p-values returned by the function have to be compared with the adjusted significance level from the screening stage for the analysis to be valid.* The adjusted significance level can be accessed by 
+We can explore the results of the stage-wise analysis by querying the object returned by `stageWiseAdjustment`. **Note that the confirmation stage adjusted p-values returned by the function have to be compared with the adjusted significance level from the screening stage for the analysis to be valid.** The adjusted significance level can be accessed with the `adjustedAlphaLevel` function 
 
 ```{r}
 adjustedAlphaLevel(adjustedPSW)
 ```
 
-which shows that the adjusted significance level for the Hammer dataset is `r round(adjustedAlphaLevel(adjustedPSW),2)*100`%. The adjusted p-values from the confirmation stage can be accessed with the `getAdjustedPValues` function:
+and shows that the adjusted significance level for the Hammer dataset is around `r round(adjustedAlphaLevel(adjustedPSW),2)*100`%. The adjusted p-values from the confirmation stage can be accessed with the `getAdjustedPValues` function:
 
 ```{r}
 head(getAdjustedPValues(adjustedPSW, onlySignificantGenes=FALSE))
 head(getAdjustedPValues(adjustedPSW, onlySignificantGenes=TRUE))
 ```
 
-and may either return all p-values or only those from the significant genes, as specified by the `onlySignificantGenes` argument. Finally, the `getResults` function returns a 0/1 matrix where rows correspond to features and columns correspond to hypotheses, including the screening hypothesis. For every feature $\times$ hypothesis combination, it indicates whether the test is significant (1) or not (0) according to the stage-wise testing procedure. For the screening hypothesis the p-values are thus compared to the number specified by `alpha` while the confirmation adjusted p-values are compared to the adjusted significance level.
+and may either return all p-values or only those from the significant genes, as specified by the `onlySignificantGenes` argument. Finally, the `getResults` function returns a 0/1 matrix where rows correspond to features and columns correspond to hypotheses, including the screening hypothesis. For every feature $\times$ hypothesis combination, it indicates whether the test is significant (1) or not (0) according to the stage-wise testing procedure. For the screening hypothesis the BH adjusted p-values are thus compared to the number specified by `alpha` while the confirmation adjusted p-values are compared to the adjusted significance level.
 
 ```{r}
 res <- getResults(adjustedPSW)
@@ -142,7 +151,7 @@ head(res)
 colSums(res) #stage-wise analysis results
 ```
 
-The `adjustment` argument to `stageWiseAdjustment` allows manual specification of the FWER adjustment correction. It requires a numeric vector of the same length as the number of columns in `pConfirmation`. The first element of the vector is the adjustment for the most significant p-value of the gene, the second element for the second most significant p-value etc. Since the Hammer dataset did not require any adjustment, identical results are obtained when manually specifying the adjustments to equal $1$.
+The `adjustment` argument from the `stageWiseAdjustment` function allows the user to specify the FWER adjustment correction. It requires a numeric vector of the same length as the number of columns in `pConfirmation`. The first element of the vector is the adjustment for the most significant p-value of the gene, the second element for the second most significant p-value etc. Since the Hammer dataset did not require any adjustment, identical results are obtained when manually specifying the adjustments to equal $1$.
 
 ```{r}
 adjustedPSW <- stageWiseAdjustment(object=stageRObj, method="user", alpha=0.05, adjustment=c(1,1,1))
@@ -150,19 +159,15 @@ res <- getResults(adjustedPSW)
 colSums(res)
 ```
 
-
-
 # Differential transcript expression/usage
-
 
 Multiple hypotheses of interest per gene also arise in transcript level studies, where the different hypotheses correspond to the different isoforms for a gene.
 We will analyse differential transcript usage for a case study that investigated expression in prostate cancer versus normal tissue in 14 Chinese patients [@Ren2012].
 The raw sequences have been preprocessed with kallisto [@Bray2016] and transcript level abundance estimates can be downloaded from The Lair project [@Pimentel2016] [website](http://pachterlab.github.io/lair/). We used the unnormalized, unfiltered abundances for the analysis.
-A subset of the dataset comes with the `stageR` package and can be accessed with `data(esetProstate)` after loading `stageR`. The `ExpressionSet` contains the metadata for the samples in `pData(esetProstate)` and corresponding gene identifiers for the transcripts are stored in `fData(esetProstate)`. The dataset contains 32526 transcripts
+A subset of the dataset comes with the `stageR` package and can be accessed with `data(esetProstate)` after loading `stageR`. The `ExpressionSet` contains the metadata for the samples in `pData(esetProstate)` and corresponding gene identifiers for the transcripts are stored in `fData(esetProstate)`. The dataset contains 32526 transcripts from 456 genes.
 
 ```{r}
-#data("esetProstate",package="stageR")
-load("/Users/koenvandenberge/Dropbox/PhD/Research/stageWiseTesting/stageR/stageR/data/esetProstate.rda")
+data("esetProstate") #from stageR package
 head(pData(esetProstate))
 head(fData(esetProstate))
 ```
@@ -180,7 +185,7 @@ length(unique(tx2gene$gene)) #nr genes
 median(table(as.character(tx2gene$gene))) #median nr of tx/gene
 ```
 
-Next we show how you can use the `stageR` package to analyse DTU in a stage-wise approach. We start with a regular DEXseq analysis to obtain p-values for every transcript and q-values for every gene.
+We will show how to use the `stageR` package to analyse DTU with a stage-wise approach. We start with a regular DEXseq analysis to obtain p-values for every transcript and q-values for every gene. Since both control and tumoral tissue are derived from the same patient for all 14 patients, we add a block effect for the patient to account for the correlation between samples within every patient.
 
 ```{r}
 ### regular DEXSeq analysis
@@ -193,19 +198,19 @@ dxd <- DEXSeqDataSet(countData = exprs(esetProstate),
                          groupID = as.character(geneForEachTx))
 dxd <- estimateSizeFactors(dxd)
 dxd <- estimateDispersions(dxd)
-dxd <- testForDEU(dxd, reducedModel = ~ sample + exon + patient)
+dxd <- nbinomLRT(dxd, reduced=~ sample + exon + patient)
 dxr <- DEXSeqResults(dxd)
 dxr$padj[is.na(dxr$padj)]=1
 qvalDxr <- perGeneQValue(dxr)
 ```
 
-The code above is a conventional `DEXSeq` analysis for analysing differential transcript usage. It would proceed by either assessing the significant genes according to the gene-wise q-values or by assessing the significant transcripts according to the transcript-level p-values, after adjustment for multiple testing. Performing and interpreting both analyses does not provide control of false positives and may get cumbersome. In the following code, we show how to automatically perform a stage-wise analysis using `stageR`. We start by constructing
+The code above is a conventional `DEXSeq` analysis for analysing differential transcript usage. It would proceed by either assessing the significant genes according to the gene-wise q-values or by assessing the significant transcripts according to the transcript-level p-values, after adjustment for multiple testing. Performing and interpreting both analyses does not provide appropriate FDR control and thus should be avoided. However, interpretation on the gene level combined with transcript level results may be interesting and this can be achieved through stage-wise testing. In the following code, we show how to automatically perform a stage-wise analysis using `stageR`. We start by constructing
 
- - a named matrix with transcript-level p-values `pConfirmation`
  - a named vector of gene-wise q-values `pScreen`
+ - a named matrix with transcript-level p-values `pConfirmation`
  - a `data.frame` with transcript identifiers and corresponding gene identifiers `tx2gene`
  
-These three objects provide everything for the stage-wise analysis.
+These three objects provide everything we need for the stage-wise analysis.
 
 ```{r}
 pConfirmation=matrix(dxr$pvalue,ncol=1)
@@ -214,7 +219,7 @@ pScreen=qvalDxr
 tx2gene=fData(esetProstate)
 ```
 
-Next we build an object from the `stageR` class and indicate that the screening hypothesis p-values were already adjusted by setting `pScreenAdjusted=TRUE`. Similar as in the DGE example, we port this object to the `stageWiseAdjustment` function for correcting the p-values. We control the analysis on a $5\%$ target OFDR (`alpha=0.05`). `method="dtu"` indicates the adapted Holm-Shaffer FWER correction that was specifically tailored for DTU analysis as described in the manuscript. In brief, we test the two most significant p-values on a $\alpha/(n_g-2)$, with $n_g$ the number of transcripts for gene $g$, level and from the third transcript onwards the Holm correction [@Holm1979] is used.
+Next we build an object from the `stageR` class and indicate that the screening hypothesis p-values were already adjusted by setting `pScreenAdjusted=TRUE`. Similar as in the DGE example, we port this object to the `stageWiseAdjustment` function for correcting the p-values. We control the analysis on a $5\%$ target OFDR (`alpha=0.05`). `method="dtu"` indicates the adapted Holm-Shaffer FWER correction that was specifically tailored for DTU analysis as described in the manuscript. In brief, the Holm procedure [@Holm1979] is used from the third transcript onwards and the two most significant p-values are tested on a $\alpha_I/(n_g-2)$ significance level, with $\alpha_I$ the BH adjusted significance level from the screening stage and $n_g$ the number of transcripts for gene $g$.
 
 ```{r}
 stageRObj <- buildStageR(pScreen=pScreen, pConfirmation=pConfirmation, pScreenAdjusted=TRUE)
@@ -241,7 +246,7 @@ res=getResults(adjustedPStageWise)
 head(res)
 ```
 
-To show how to use the adjusted p-values we recreate this result manually:
+To show how to use the adjusted p-values we can recreate this result ourselves:
 
 ```{r}
 colSums(res)
