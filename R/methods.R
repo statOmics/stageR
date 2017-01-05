@@ -9,8 +9,8 @@ print.stageR <- function(object, ...){
     }
     if(object@adjusted){
 	cat(paste0(length(object@pScreen)," screening hypothesis p-values \n"))
-	cat(paste0(ncol(object@pConfirmation),"confirmation hypotheses for",nrow(object@pConfirmation)," genes \n"))
-	cat(paste0("adjusted p-values on a ",alpha*100,"% OFDR level with ",method," FWER method \n"))
+	cat(paste0(ncol(object@pConfirmation)," confirmation hypotheses for",nrow(object@pConfirmation)," genes \n"))
+	cat(paste0("adjusted p-values on a ",object@alpha*100,"% OFDR level with the following FWER correction method: ",object@method," \n"))
 
     }
 }

@@ -44,3 +44,23 @@ stageRTx <- function(pScreen, pConfirmation, pScreenAdjusted=FALSE, tx2gene){
   return(stageR)
 }
 
+setValidity("stageR",function(object){
+  if(length(pScreen)!=nrow(pConfirmation)) message("The number of screening hypothesis p-values must be equal to the number of rows in pConfirmation.")
+
+  if(!identical(as.character(names(pScreen)),as.character(rownames(pConfirmation)))) message("The features (names) in pScreen are not identical to the features (rownames) in pConfirmation.")
+
+  if(any(is.na(object@pConfirmation))) message("NA confirmation stage p-values are not allowed.")
+
+})
+
+setValidity("stageRTx",function(object){
+  if(any(is.na(match(rownames(pConfirmation),tx2gene[,1])))) message("not all transcript names in pConfirmation match with a transcript ID from the tx2gene object.")
+
+  if(any(is.na(match(names(pScreen),tx2gene[,2])))) message("not all gene names in pScreen match with a gene ID from the tx2gene object.")
+
+  if(any(is.na(object@pConfirmation))) message("NA confirmation stage p-values are not allowed.")
+
+})
+
+
+

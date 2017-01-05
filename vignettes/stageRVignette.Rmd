@@ -18,12 +18,20 @@ In the confirmation stage, only genes passing the screening stage are considered
 
 The vignette analyses two datasets. The Hammer dataset [@Hammer2010] is a differential gene expression analysis for an experiment with a complex design. This type of analyses are supported by the `stageR` class. The Renn dataset [@Renn2012] analyses differential transcript usage (DTU) in tumoral versus normal tissue in Chinese patients. Transcript-level analyses are supported by the `stageRTx` class. 
 
+# Installing and loading the package
+
+The package is hosted on GitHub and can be installed with the `devtools` library.
+
+```{r}
+devtools::install_github("statOmics/stageR",auth_token="cb649b65157aa8cd235a992d99cbe9384fd0eeb2")
+library(stageR)
+```
+
+
 # Differential gene expression: Hammer dataset
 
 ```{r,echo=TRUE,warning=FALSE}
-suppressPackageStartupMessages({library(edgeR) ; library(Biobase) ; library(limma) ; library(utils) ; library(devtools) ; library(DEXSeq)})
-install_github("statOmics/stageR",auth_token="cb649b65157aa8cd235a992d99cbe9384fd0eeb2")
-library(stageR)
+suppressPackageStartupMessages({library(edgeR) ; library(Biobase) ; library(limma) ; library(utils) ; library(DEXSeq)})
 ```
 
 As a case study for differential gene expression analysis, we analyse the Hammer dataset [@Hammer2010]. We first download the expressionSet from the ReCount project [website](http://bowtie-bio.sourceforge.net/recount) [@Frazee2011] in the current working directory and load it.
@@ -185,6 +193,8 @@ length(unique(tx2gene$gene)) #nr genes
 median(table(as.character(tx2gene$gene))) #median nr of tx/gene
 ```
 
+## Conventional analysis
+
 We will show how to use the `stageR` package to analyse DTU with a stage-wise approach. We start with a regular DEXseq analysis to obtain p-values for every transcript and q-values for every gene. Since both control and tumoral tissue are derived from the same patient for all 14 patients, we add a block effect for the patient to account for the correlation between samples within every patient.
 
 ```{r}
@@ -203,6 +213,8 @@ dxr <- DEXSeqResults(dxd)
 dxr$padj[is.na(dxr$padj)]=1
 qvalDxr <- perGeneQValue(dxr)
 ```
+
+## Stage-wise analysis
 
 The code above is a conventional `DEXSeq` analysis for analysing differential transcript usage. It would proceed by either assessing the significant genes according to the gene-wise q-values or by assessing the significant transcripts according to the transcript-level p-values, after adjustment for multiple testing. Performing and interpreting both analyses does not provide appropriate FDR control and thus should be avoided. However, interpretation on the gene level combined with transcript-level results can provide useful biological insights and this can be achieved through stage-wise testing. In the following code, we show how to automatically perform a stage-wise analysis using `stageR`. We start by constructing
 
