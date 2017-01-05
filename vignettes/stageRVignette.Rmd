@@ -226,10 +226,16 @@ stageRObj <- stageR(pScreen=pScreen, pConfirmation=pConfirmation, pScreenAdjuste
 adjustedPStageWise <- stageWiseAdjustment(object=stageRObj, method="dtu", alpha=0.05, tx2gene=tx2gene)
 ```
 
-We can then explore the results using a range of accessor functions. The significant genes can be returned with the `getSignificantGenes` function:
+We can then explore the results using a range of accessor functions. The significant genes can be returned with the `getSignificantGenes` function.
 
 ```{r}
 head(getSignificantGenes(adjustedPStageWise))
+```
+
+Similar, the significant transcripts can be returned with `getSginificantTx`.
+
+```{r}
+head(getSignificantTx(adjustedPStageWise))
 ```
 
 The stage-wise adjusted p-values are returned using the `getAdjustedPValues` function. The screening (gene) hypothesis p-values were adjusted according to the BH FDR criterion and the confirmation (transcript) hypotheses were adjusted with the specified FWER control. Hence, the confirmation p-values returned from this function should be compared to the BH adjusted significance level of the first stage. The function returns a matrix where the different rows correspond to transcripts and the rownames correspond to gene and transcript identifiers separated with a dot:

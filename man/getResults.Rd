@@ -3,7 +3,7 @@
 \docType{methods}
 \name{getResults}
 \alias{getResults}
-\title{Get significance results accroding to a stage-wise analysis.}
+\title{Get significance results according to a stage-wise analysis.}
 \usage{
 \S4method{getResults}{stageR}(object)
 }

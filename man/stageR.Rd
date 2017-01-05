@@ -2,9 +2,12 @@
 % Please edit documentation in R/constructors.R
 \name{stageR}
 \alias{stageR}
+\alias{stageRTx}
 \title{Create stageR object}
 \usage{
 stageR(pScreen, pConfirmation, pScreenAdjusted = FALSE)
+
+stageRTx(pScreen, pConfirmation, pScreenAdjusted = FALSE, tx2gene)
 }
 \arguments{
 \item{pScreen}{A vector of screening hypothesis p-values.}
@@ -23,6 +26,7 @@ In its most basic form, it consists of a vector of p-values for the screening hy
 \examples{
 # create a \\code{\\link{stageRClass}} object
 stageRObj <- stageR(pScreen=runif(10), pConfirmation=matrix(runif(30),nrow=10,ncol=3))
+stageRObj <- stageRTx(pScreen=runif(10), pConfirmation=matrix(runif(30),nrow=10,ncol=3), tx2gene=data.frame(transcripts=paste0("transcript",1:10),genes=paste0("gene",rep(1:2,each=5))))
 }
 \references{
 Van den Berge K., Soneson C., Robinson M.D., Clement L.

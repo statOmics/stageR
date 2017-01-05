@@ -18,8 +18,11 @@
 #' @name stageRClass
 #' @rdname stageRClass
 #' @exportClass stageR
+setClass("stageR",slots=c(pScreen="numeric", pConfirmation="matrix", adjustedP="matrix", method="character", alpha="numeric", alphaAdjusted="numeric", adjusted="logical", pScreenAdjusted="logical"))
 
-setClass("stageR",slots=c(pScreen="numeric", pConfirmation="matrix", adjustedP="matrix", method="character", alpha="numeric", alphaAdjusted="numeric", adjusted="logical", pScreenAdjusted="logical", tx2gene="data.frame"))
-
+#' @name stageRClass
+#' @rdname stageRClass
+#' @exportClass stageRTx
+setClass("stageRTx",slots=c(pScreen="numeric", pConfirmation="matrix", adjustedP="matrix", method="character", alpha="numeric", alphaAdjusted="numeric", adjusted="logical", pScreenAdjusted="logical", tx2gene="data.frame"))
 
 

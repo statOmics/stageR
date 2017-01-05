@@ -1,6 +1,6 @@
 #' @include stageRClasses.R
 
-setGeneric("buildStageR", function(pScreen, pConfirmation, pScreenAdjusted, ...) standardGeneric("buildStageR"))
+setGeneric("stageR", function(pScreen, pConfirmation, pScreenAdjusted, ...) standardGeneric("stageR"))
 
 setGeneric("getPScreen", function(object, ...) standardGeneric("getPScreen"))
 
@@ -17,3 +17,4 @@ setGeneric("getResults", function(object, ...) standardGeneric("getResults"))
 
 setGeneric("getSignificantGenes", function(object, ...) standardGeneric("getSignificantGenes"))
 
+setGeneric("getSignificantTx", function(object, ...) standardGeneric("getSignificantTx"))

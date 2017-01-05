@@ -162,6 +162,7 @@
 
 
 .getResults <- function(object){
+  if(class(object)!="stageR") stop("object should be from the stageR class.")
     results=matrix(0,nrow=nrow(object@adjustedP),ncol=ncol(object@adjustedP), dimnames=dimnames(object@adjustedP))
     results[object@adjustedP<=object@alpha,] = 1
     return(results)
@@ -177,11 +178,12 @@
 #' @param alpha the OFDR on which to control the two-stage analysis.
 #' @param adjustment a user-defined adjustment of the confirmation stage p-values. Only applicable when \code{method} is \code{"none"} and ignored otherwise.
 #' @param tx2gene Only applicable when  \code{method} is \code{"dte"} or \code{"dtu"}.  A \code{\link[base]{data.frame}} with transcript IDs in the first columns and gene IDs in the second column. The rownames from \code{pConfirmation} must be contained in the transcript IDs from \code{tx2gene}, and the names from \code{pScreen} must be contained in the gene IDs.
+#' @param order logical, specifying whether the adjusted p-values should be ordered according to the significance of the screening hypothesis.
 #' @references
-#' Van den Berge K., Soneson C., Robinson M.D., and Clement L, "A generic stage-wise testing procedure for differential expression and differential transcript usage." To be submitted.
-#' R. Heller, E. Manduchi, G. R. Grant, and W. J. Ewens, “A flexible two-stage procedure for identifying gene sets that are differentially expressed.” Bioinformatics (Oxford, England), vol. 25, pp. 1019–25, apr 2009.
+#' K. Van den Berge, C. Soneson, M.D. Robinson, and L. Clement, "A generic stage-wise testing procedure for differential expression and differential transcript usage." To be submitted.
+#' R. Heller, E. Manduchi, G. R. Grant, and W. J. Ewens, “A flexible two-stage procedure for identifying gene sets that are differentially expressed.” Bioinformatics (Oxford, England), vol. 25, pp. 1019–25, 2009.
 #' S. Holm, “A Simple Sequentially Rejective Multiple Test Procedure,” Scandinavian Journal of Statistics, vol. 6, no. 2, pp. 65–70, 1979.
-#' J. P. Shaffer, “Modified Sequentially Rejective Multiple Test Procedures,” Journal of the American Statistical Asso- ciation, vol. 81, p. 826, sep 1986.
+#' J. P. Shaffer, “Modified Sequentially Rejective Multiple Test Procedures,” Journal of the American Statistical Asso- ciation, vol. 81, p. 826, 1986.
 #' @examples
 #' pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
 #' stageRObj <- stageR(pScreen=pScreen, pConfirmation=matrix(runif(3000),nrow=1000,ncol=3))
@@ -200,8 +202,23 @@ setMethod("stageWiseAdjustment",signature=signature(object="stageR", method="cha
 	      object@alphaAdjusted <- stageAdjPValues[["alphaAdjusted"]]
 	      object@method <- method
 	      object@alpha <- alpha
+	      object@adjusted <- TRUE
 	      return(object)
 	  })
+setMethod("stageWiseAdjustment",signature=signature(object="stageRTx", method="character", alpha="numeric"),
+          definition=function(object, method, alpha, ...){
+            pScreen=object@pScreen
+            pConfirmation=object@pConfirmation
+            pScreenAdjusted=object@pScreenAdjusted
+            tx2gene=object@tx2gene
+            stageAdjPValues <- .stageWiseTest(pScreen=pScreen, pConfirmation=pConfirmation, alpha=alpha, method=method,  pScreenAdjusted=pScreenAdjusted, tx2gene=tx2gene, ...)
+          object@adjustedP <- stageAdjPValues[["pAdjStage"]]
+          object@alphaAdjusted <- stageAdjPValues[["alphaAdjusted"]]
+          object@method <- method
+          object@alpha <- alpha
+          object@adjusted <- TRUE
+          return(object)
+          })
 
 #' Return screening hypothesis p-values from a \code{\link{stageRClass}} object.
 #'
@@ -214,6 +231,8 @@ setMethod("stageWiseAdjustment",signature=signature(object="stageR", method="cha
 #' @export
 setMethod("getPScreen",signature=signature(object="stageR"),
 	  definition=function(object){return(object@pScreen)})
+setMethod("getPScreen",signature=signature(object="stageRTx"),
+          definition=function(object){return(object@pScreen)})
 
 #' Return unadjusted confirmation hypothesis p-values from a \code{\link{stageRClass}} object.
 #'
@@ -226,6 +245,9 @@ setMethod("getPScreen",signature=signature(object="stageR"),
 #' @export
 setMethod("getPConfirmation",signature=signature(object="stageR"),
 	  definition=function(object){return(object@pConfirmation)})
+setMethod("getPConfirmation",signature=signature(object="stageRTx"),
+          definition=function(object){return(object@pConfirmation)})
+
 
 #' Retrieve the stage-wise adjusted p-values.
 #'
@@ -246,6 +268,10 @@ setMethod("getAdjustedPValues",signature=signature(object="stageR"),
 	  definition=function(object, ...){
 	      return(.getAdjustedP(object=object, ...))
 	  })
+setMethod("getAdjustedPValues",signature=signature(object="stageRTx"),
+          definition=function(object, ...){
+            return(.getAdjustedP(object=object, ...))
+          })
 
 #' Get adjusted significance level from the screening stage.
 #'
@@ -264,6 +290,8 @@ setMethod("getAdjustedPValues",signature=signature(object="stageR"),
 #' @export
 setMethod("adjustedAlphaLevel",signature=signature(object="stageR"),
 	  definition=function(object){return(object@alphaAdjusted)})
+setMethod("adjustedAlphaLevel",signature=signature(object="stageRTx"),
+          definition=function(object){return(object@alphaAdjusted)})
 
 #' Get significance results according to a stage-wise analysis.
 #'
@@ -306,7 +334,7 @@ setMethod("getResults",signature=signature(object="stageR"),
 #' @name getSignificantGenes
 #' @rdname getSignificantGenes
 #' @export
-setMethod("getSignificantGenes",signature=signature(object="stageR"),
+setMethod("getSignificantGenes",signature=signature(object="stageRTx"),
           definition=function(object){
             ### set control whether adjustedP slot really exists in object
             IDs=rownames(object@adjustedP)
@@ -320,16 +348,36 @@ setMethod("getSignificantGenes",signature=signature(object="stageR"),
           })
 
 
-
-#setMethod("getSignificantTx",signature=signature(object="stageR"),
-#          definition=function(object){
-#            ### set control whether adjustedP slot really exists in object
-#            IDs=rownames(object@adjustedP)
-#            txIDs=unlist(lapply(strsplit(IDs,split=".",fixed=TRUE),function(x) x[2]))
-#            significantGeneIDs=object@adjustedP[,1]<=object@alpha
-#            significantGeneNames=geneIDs[significantGeneIDs]
-#            geneAdjustedPValues=object@adjustedP[significantGeneIDs,1]
-#            dups=duplicated(significantGeneNames)
-#            significantGenes=matrix(geneAdjustedPValues[!dups],ncol=1,dimnames=list(significantGeneNames[!dups],"FDR adjusted p-value"))
-#            return(significantGenes)
-#          })
+#' Return significant transcripts when performing transcript level analysis.
+#'
+#' This functions returns a matrix with significant transctripts according to a stage-wise analysis.
+#'
+#' @param object an object of the \code{\link{stageRClass}} class.
+#' @examples
+#' #make identifiers linking transcripts to genes
+#' set.seed(1)
+#' genes=paste0("gene",sample(1:200,1000,replace=TRUE))
+#' nGenes=length(table(genes))
+#' transcripts=paste0("tx",1:1000)
+#' tx2gene=data.frame(transcripts,genes)
+#' #gene-wise q-values
+#' pScreen=c(seq(1e-10,1e-2,length.out=nGenes-100),seq(1e-2,.2,length.out=50),seq(50))
+#' names(pScreen)=names(table(genes)) #discards genes that are not simulated
+#' pConfirmation=matrix(runif(1000),nrow=1000,ncol=1)
+#' rownames(pConfirmation)=transcripts
+#' stageRObj <- stageR(pScreen=pScreen, pConfirmation=pConfirmation ,pScreenAdjusted=TRUE)
+#' adjustedP <- stageWiseAdjustment(stageRObj, method="dte", alpha=0.05, tx2gene=tx2gene)
+#' head(getSignificantTx(adjustedP))
+#' @name getSignificantTx
+#' @rdname getSignificantTx
+#' @export
+setMethod("getSignificantTx",signature=signature(object="stageRTx"),
+          definition=function(object){
+            ### set control whether adjustedP slot really exists in object
+            IDs=rownames(object@adjustedP)
+            txIDs=unlist(lapply(strsplit(IDs,split=".",fixed=TRUE),function(x) x[2]))
+            significantTxIDs=which(object@adjustedP[,2]<=object@alpha)
+            significantTxNames=txIDs[significantTxIDs]
+            significantTranscripts=matrix(object@adjustedP[significantTxIDs,2],ncol=1,dimnames=list(significantTxNames,"stage-wise adjusted p-value"))
+            return(significantTranscripts)
+          })
