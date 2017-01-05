@@ -11,11 +11,11 @@
 #' @references Van den Berge K., Soneson C., Robinson M.D., Clement L.
 #' @examples
 #' # create a \code{\link{stageRClass}} object
-#' stageRObj <- buildStageR(pScreen=runif(10), pConfirmation=matrix(runif(30),nrow=10,ncol=3))
-#' @name buildStageR
-#' @rdname buildStageR
+#' stageRObj <- stageR(pScreen=runif(10), pConfirmation=matrix(runif(30),nrow=10,ncol=3))
+#' @name stageR
+#' @rdname stageR
 #' @export
-buildStageR <- function(pScreen, pConfirmation, pScreenAdjusted=FALSE)
+stageR <- function(pScreen, pConfirmation, pScreenAdjusted=FALSE)
 {
   stageR <- new("stageR")
   stageR@pScreen <- pScreen
@@ -23,3 +23,14 @@ buildStageR <- function(pScreen, pConfirmation, pScreenAdjusted=FALSE)
   stageR@pScreenAdjusted <- pScreenAdjusted
   return(stageR)
 }
+
+
+stageRTx <- function(pScreen, pConfirmation, pScreenAdjusted=FALSE, tx2gene){
+  stageR <- new("stageR")
+  stageR@pScreen <- pScreen
+  stageR@pConfirmation <- pConfirmation
+  stageR@pScreenAdjusted <- pScreenAdjusted
+  stageR@tx2gene <- tx2gene
+  return(stageR)
+}
+

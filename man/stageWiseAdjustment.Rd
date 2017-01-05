@@ -11,7 +11,7 @@
 \arguments{
 \item{object}{an object of the \code{\link{stageRClass}} class.}
 
-\item{method}{Character string indicating the method used for FWER correction in the confirmation stage of the stage-wise analysis. Can be any of \code{"none"}, \code{"holm"}, \code{"dte"}, \code{"dtu"}, \code{"user"}. \code{"none"} will not adjusted the p-values in the confirmation stage. \code{"holm"} is an adapted Holm procedure for a stage-wise analysis, where the method takes into account the fact that genes in the confirmation stage have already passed the screening stage, hence the procedure will be more powerful for the most significant p-value as compared to the standard Holm procedure. \code{"dte"} is the adjusted Holm-Shaffer procedure for differential transcript expression analysis. \code{"dtu"} is the adjusted Holm-Shaffer procedure for differential transcript usage. \code{"user"} indicates a user-defined adjustment that should be specified with the \code{adjustment} argument.}
+\item{method}{Character string indicating the method used for FWER correction in the confirmation stage of the stage-wise analysis. Can be any of \code{"none"}, \code{"holm"}, \code{"dte"}, \code{"dtu"}, \code{"user"}. \code{"none"} will not adjust the p-values in the confirmation stage. \code{"holm"} is an adapted Holm procedure for a stage-wise analysis, where the method takes into account the fact that genes in the confirmation stage have already passed the screening stage, hence the procedure will be more powerful for the most significant p-value as compared to the standard Holm procedure. \code{"dte"} is the adjusted Holm-Shaffer procedure for differential transcript expression analysis. \code{"dtu"} is the adjusted Holm-Shaffer procedure for differential transcript usage. \code{"user"} indicates a user-defined adjustment that should be specified with the \code{adjustment} argument.}
 
 \item{alpha}{the OFDR on which to control the two-stage analysis.}
 
@@ -24,7 +24,7 @@ This function will adjust p-values according to a hierarchical two-stage testing
 }
 \examples{
 pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
-stageRObj <- buildStageR(pScreen=pScreen, pConfirmation=matrix(runif(3000),nrow=1000,ncol=3))
+stageRObj <- stageR(pScreen=pScreen, pConfirmation=matrix(runif(3000),nrow=1000,ncol=3))
 adjustedP <- stageWiseAdjustment(stageRObj, method="holm", alpha=0.05)
 getAdjustedPValues(adjustedP, onlySignificantGenes=TRUE)
 }

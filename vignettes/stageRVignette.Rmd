@@ -222,7 +222,7 @@ tx2gene=fData(esetProstate)
 Next we build an object from the `stageR` class and indicate that the screening hypothesis p-values were already adjusted by setting `pScreenAdjusted=TRUE`. Similar as in the DGE example, we port this object to the `stageWiseAdjustment` function for correcting the p-values. We control the analysis on a $5\%$ target OFDR (`alpha=0.05`). `method="dtu"` indicates the adapted Holm-Shaffer FWER correction that was specifically tailored for DTU analysis as described in the manuscript. In brief, the Holm procedure [@Holm1979] is used from the third transcript onwards and the two most significant p-values are tested on a $\alpha_I/(n_g-2)$ significance level, with $\alpha_I$ the BH adjusted significance level from the screening stage and $n_g$ the number of transcripts for gene $g$.
 
 ```{r}
-stageRObj <- buildStageR(pScreen=pScreen, pConfirmation=pConfirmation, pScreenAdjusted=TRUE)
+stageRObj <- stageR(pScreen=pScreen, pConfirmation=pConfirmation, pScreenAdjusted=TRUE)
 adjustedPStageWise <- stageWiseAdjustment(object=stageRObj, method="dtu", alpha=0.05, tx2gene=tx2gene)
 ```
 

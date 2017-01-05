@@ -14,7 +14,7 @@
 Return screening hypothesis p-values from a \code{\link{stageRClass}} object.
 }
 \examples{
-stageRObj <- buildStageR(pScreen=seq(1e-4,.5,length.out=1000), pConfirmation=matrix(runif(3000),nrow=1000,ncol=3))
+stageRObj <- stageR(pScreen=seq(1e-4,.5,length.out=1000), pConfirmation=matrix(runif(3000),nrow=1000,ncol=3))
 getPScreen(stageRObj)
 }
 
