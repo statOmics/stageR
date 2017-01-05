@@ -5,7 +5,7 @@
 \alias{getSignificantGenes}
 \title{Return significant genes when performing transcript level analysis.}
 \usage{
-\S4method{getSignificantGenes}{stageR}(object)
+\S4method{getSignificantGenes}{stageRTx}(object)
 }
 \arguments{
 \item{object}{an object of the \code{\link{stageRClass}} class.}

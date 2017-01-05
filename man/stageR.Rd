@@ -15,6 +15,8 @@ stageRTx(pScreen, pConfirmation, pScreenAdjusted = FALSE, tx2gene)
 \item{pConfirmation}{A matrix of confirmation hypothesis p-values. The number of rows should be equal to the length of \code{pScreen}.}
 
 \item{pScreenAdjusted}{logical, indicating whether the supplied p-values for the screening hypothesis have already been adjusted for multiplicity according to the FDR.}
+
+\item{tx2gene}{Only applicable for transcript-level analysis. A \code{\link[base]{data.frame}} with transcript IDs in the first columns and gene IDs in the second column. The rownames from \code{pConfirmation} must be contained in the transcript IDs from \code{tx2gene}, and the names from \code{pScreen} must be contained in the gene IDs.}
 }
 \value{
 An instance of an object of the \code{\link{stageRClass}}

@@ -5,7 +5,7 @@
 \alias{getSignificantTx}
 \title{Return significant transcripts when performing transcript level analysis.}
 \usage{
-\S4method{getSignificantTx}{stageR}(object)
+\S4method{getSignificantTx}{stageRTx}(object)
 }
 \arguments{
 \item{object}{an object of the \code{\link{stageRClass}} class.}

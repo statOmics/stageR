@@ -1,7 +1,7 @@
 #' @include stageRClasses.R allGenerics.R
 
 
-.stageWiseTest <- function(pScreen, pConfirmation, alpha, method=c("none","holm","dte","dtu","user"), adjustment=NULL, tx2gene=NULL, pScreenAdjusted, order=TRUE){
+.stageWiseTest <- function(pScreen, pConfirmation, alpha, method=c("none","holm","dte","dtu","user"), adjustment=NULL, tx2gene=NULL, pScreenAdjusted){
     method <- match.arg(method,c("none","holm","dte","dtu","user"))
 
         if(method=="none"){
@@ -129,42 +129,99 @@
     if(!(method %in% c("dte","dtu"))){
       pAdjStage <- cbind(padjScreenReturn,pAdjConfirmation)
       colnames(pAdjStage)[1] <- "padjScreen"
-      if(order) pAdjStage <- pAdjStage[significanceOrdering,]
+      #if(order) pAdjStage <- pAdjStage[significanceOrdering,]
     }
     if(method %in% c("dte","dtu")){
       pAdjStage=cbind(pAdjConfirmation,padjScreenReturn)[,2:1]
       colnames(pAdjStage) = c("gene","transcript")
-      if(order){
-       ordGenes <- names(pScreen)[significanceOrdering]
-       #order acc. to gene significance
-       idList <- sapply(ordGenes,function(gene) which(geneForEachTx%in%gene))
-       #order tx within genes
-       idListOrdTx <- lapply(idList, function(x) x[order(pConfirmation[x,])])
-       pAdjStage <- pAdjStage[unlist(idListOrdTx),]
-      }
+      #if(order){
+      # ordGenes <- names(pScreen)[significanceOrdering]
+      # #order acc. to gene significance
+      # idList <- sapply(ordGenes,function(gene) which(geneForEachTx%in%gene))
+      # #order tx within genes
+      # idListOrdTx <- lapply(idList, function(x) x[order(pConfirmation[x,])])
+      # pAdjStage <- pAdjStage[unlist(idListOrdTx),]
+      #}
     }
     return(list(pAdjStage=pAdjStage, alphaAdjusted=alphaAdjusted))
 }
 
-.getAdjustedP <- function(object, onlySignificantGenes=FALSE){
-	if(onlySignificantGenes){
-	  #warning(paste0("The returned adjusted p-values are based on a stage-wise testing approach and should be compared to the adjusted alpha level of "),round(adjustedAlphaLevel(object),6),", as returned by the 'getAdjustedAlphaLevel' function.", call.=FALSE)
-	  warning(paste0("The returned adjusted p-values are based on a stage-wise testing approach and are only valid for the provided target OFDR level of ",object@alpha*100,"%. If a different target OFDR level is of interest, the entire adjustment should be re-run."), call.=FALSE)
+.getAdjustedP <- function(object, onlySignificantGenes=FALSE, order=TRUE){
+  warning(paste0("The returned adjusted p-values are based on a stage-wise testing approach and are only valid for the provided target OFDR level of ",object@alpha*100,"%. If a different target OFDR level is of interest, the entire adjustment should be re-run."), call.=FALSE)
+	if(onlySignificantGenes){ #significant genes
 	    genesStageI <- object@adjustedP[,1]<=object@alpha
-	    if(sum(genesStageI)==0){ message(paste0("No genes were found to be significant on a ",alpha*100,"% OFDR level.")) } else{
-	    return(object@adjustedP[genesStageI,])}
-	} else {
-	  #warning(paste0("The returned adjusted p-values are based on a stage-wise testing approach and should be compared to the adjusted alpha level of "),round(adjustedAlphaLevel(object),6),", as returned by the 'getAdjustedAlphaLevel' function.", call.=FALSE)
-	  warning(paste0("The returned adjusted p-values are based on a stage-wise testing approach and are only valid for the provided target OFDR level of ",object@alpha*100,"%. If a different target OFDR level is of interest, the entire adjustment should be re-run."), call.=FALSE)
-	  return(object@adjustedP)
+	    if(sum(genesStageI)==0){
+	      message(paste0("No genes were found to be significant on a ",alpha*100,"% OFDR level."))
+	      } else {
+	      if(order){
+	        sigGenes=object@adjustedP[genesStageI,]
+	        o=order(sigGenes[,1])
+	        return(sigGenes[o,])
+	      } else {
+	        sigGenes=object@adjustedP[genesStageI,]
+	        return(sigGenes)
+	      }
+	      }
+	} else { #all genes
+	  if(order){
+	    o=order(object@adjustedP[,1])
+	    return(object@adjustedP[o,])
+	  } else {
+	    return(object@adjustedP)
+	  }
 	}
 }
 
+.getAdjustedPTx <- function(object, onlySignificantGenes=FALSE, order=TRUE){
+  warning(paste0("The returned adjusted p-values are based on a stage-wise testing approach and are only valid for the provided target OFDR level of ",object@alpha*100,"%. If a different target OFDR level is of interest, the entire adjustment should be re-run."), call.=FALSE)
+  tx2gene=object@tx2gene
+  pConfirmation=object@pConfirmation
+  geneForEachTx <- tx2gene[match(rownames(pConfirmation),tx2gene[,1]),2]
+
+  if(onlySignificantGenes){ #significant genes
+    genesStageI <- which(object@adjustedP[,1]<=object@alpha)
+    if(sum(genesStageI)==0){
+      message(paste0("No genes were found to be significant on a ",alpha*100,"% OFDR level."))
+    } else {
+      if(order){ #sort
+        ordGenes = order(object@adjustedP[genesStageI,1])
+        sigGeneIDs=unlist(lapply(strsplit(names(genesStageI),split=".",fixed=TRUE), function(x) x[1] ))
+        #order acc to gene significance
+        idList = sapply(unique(sigGeneIDs[ordGenes]), function(gene) which(geneForEachTx%in%gene))
+        #order tx within gene
+        idListOrdTx <- lapply(idList, function(x) x[order(pConfirmation[x,])])
+        outData <- object@adjustedP[unlist(idListOrdTx),]
+        outData <- data.frame("geneID"=sigGeneIDs[ordGenes],"txID"=unlist(lapply(strsplit(rownames(outData),split=".",fixed=TRUE), function(x) x[2] )),outData, row.names=NULL)
+        return(outData)
+      } else { #dont sort
+        outData <- object@adjustedP[genesStageI,]
+        outData <- data.frame("geneID"=unlist(lapply(strsplit(rownames(outData),split=".",fixed=TRUE), function(x) x[1] )),"txID"=unlist(lapply(strsplit(rownames(outData),split=".",fixed=TRUE), function(x) x[2] )),outData, row.names=NULL)
+        return(outData)
+      }
+    }
+  } else { #all genes
+    if(order){ #sort
+      ordGenes = order(object@adjustedP[,1])
+      sigGeneIDs=unlist(lapply(strsplit(rownames(object@adjustedP),split=".",fixed=TRUE), function(x) x[1] ))
+      #order acc to gene significance
+      idList = sapply(unique(sigGeneIDs[ordGenes]), function(gene) which(geneForEachTx%in%gene))
+      #order tx within gene
+      idListOrdTx <- lapply(idList, function(x) x[order(pConfirmation[x,])])
+      outData <- object@adjustedP[unlist(idListOrdTx),]
+      outData <- data.frame("geneID"=sigGeneIDs[ordGenes],"txID"=unlist(lapply(strsplit(rownames(outData),split=".",fixed=TRUE), function(x) x[2] )),outData, row.names=NULL)
+      return(outData)
+      } else { #dont sort
+        outData <- object@adjustedP
+        outData <- data.frame("geneID"=unlist(lapply(strsplit(rownames(outData),split=".",fixed=TRUE), function(x) x[1] )),"txID"=unlist(lapply(strsplit(rownames(outData),split=".",fixed=TRUE), function(x) x[2] )),outData, row.names=NULL)
+      return(outData)
+    }
+  }
+}
 
 .getResults <- function(object){
   if(class(object)!="stageR") stop("object should be from the stageR class.")
     results=matrix(0,nrow=nrow(object@adjustedP),ncol=ncol(object@adjustedP), dimnames=dimnames(object@adjustedP))
-    results[object@adjustedP<=object@alpha,] = 1
+    results[object@adjustedP<=object@alpha] = 1
     return(results)
 }
 
@@ -266,11 +323,13 @@ setMethod("getPConfirmation",signature=signature(object="stageRTx"),
 #' @export
 setMethod("getAdjustedPValues",signature=signature(object="stageR"),
 	  definition=function(object, ...){
+	    if(!object@adjusted) stop("adjust p-values first using stageWiseAdjustment")
 	      return(.getAdjustedP(object=object, ...))
 	  })
 setMethod("getAdjustedPValues",signature=signature(object="stageRTx"),
           definition=function(object, ...){
-            return(.getAdjustedP(object=object, ...))
+            if(!object@adjusted) stop("adjust p-values first using stageWiseAdjustment")
+            return(.getAdjustedPTx(object=object, ...))
           })
 
 #' Get adjusted significance level from the screening stage.
@@ -289,9 +348,15 @@ setMethod("getAdjustedPValues",signature=signature(object="stageRTx"),
 #' @rdname adjustedAlphaLevel
 #' @export
 setMethod("adjustedAlphaLevel",signature=signature(object="stageR"),
-	  definition=function(object){return(object@alphaAdjusted)})
+	  definition=function(object){
+	    if(!object@adjusted) stop("adjust p-values first using stageWiseAdjustment")
+	    return(object@alphaAdjusted)
+	    })
 setMethod("adjustedAlphaLevel",signature=signature(object="stageRTx"),
-          definition=function(object){return(object@alphaAdjusted)})
+          definition=function(object){
+            if(!object@adjusted) stop("adjust p-values first using stageWiseAdjustment")
+            return(object@alphaAdjusted)
+            })
 
 #' Get significance results according to a stage-wise analysis.
 #'
@@ -309,7 +374,10 @@ setMethod("adjustedAlphaLevel",signature=signature(object="stageRTx"),
 #' @rdname getResults
 #' @export
 setMethod("getResults",signature=signature(object="stageR"),
-	  definition=function(object){ return(.getResults(object)) })
+	  definition=function(object){
+	    if(!object@adjusted) stop("adjust p-values first using stageWiseAdjustment")
+	    return(.getResults(object))
+	    })
 
 #' Return significant genes when performing transcript level analysis.
 #'
@@ -336,7 +404,7 @@ setMethod("getResults",signature=signature(object="stageR"),
 #' @export
 setMethod("getSignificantGenes",signature=signature(object="stageRTx"),
           definition=function(object){
-            ### set control whether adjustedP slot really exists in object
+            if(!object@adjusted) stop("adjust p-values first using stageWiseAdjustment")
             IDs=rownames(object@adjustedP)
             geneIDs=unlist(lapply(strsplit(IDs,split=".",fixed=TRUE),function(x) x[1]))
             significantGeneIDs=object@adjustedP[,1]<=object@alpha
@@ -373,7 +441,7 @@ setMethod("getSignificantGenes",signature=signature(object="stageRTx"),
 #' @export
 setMethod("getSignificantTx",signature=signature(object="stageRTx"),
           definition=function(object){
-            ### set control whether adjustedP slot really exists in object
+            if(!object@adjusted) stop("adjust p-values first using stageWiseAdjustment")
             IDs=rownames(object@adjustedP)
             txIDs=unlist(lapply(strsplit(IDs,split=".",fixed=TRUE),function(x) x[2]))
             significantTxIDs=which(object@adjustedP[,2]<=object@alpha)
@@ -381,3 +449,19 @@ setMethod("getSignificantTx",signature=signature(object="stageRTx"),
             significantTranscripts=matrix(object@adjustedP[significantTxIDs,2],ncol=1,dimnames=list(significantTxNames,"stage-wise adjusted p-value"))
             return(significantTranscripts)
           })
+
+#setMethod("getResultsTx",signature=signature(object="stageRTx"),
+#          definition=function(object){
+#            if(!object@adjusted) stop("adjust p-values first using stageWiseAdjustment")
+#            padj=suppressWarnings(getAdjustedPValues(object,order=TRUE,onlySignificantGenes=TRUE))
+#            genes=factor(padj[,"geneID"])
+#            tx=as.character(padj[,"txID"])
+#            sigTx=as.character(padj[padj[,"transcript"]<=object@alpha,"txID"])
+#            l=list()
+#            for(k in 1:length(unique(genes))){
+#              l[[k]]=tx[as.numeric(genes)==k]
+#            }
+#          })
+
+
+
