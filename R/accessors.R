@@ -148,21 +148,22 @@
 
 .getAdjustedP <- function(object, onlySignificantGenes=FALSE){
 	if(onlySignificantGenes){
-	  warning(paste0("The returned adjusted p-values are based on a stage-wise testing approach and should be compared to the adjusted alpha level of "),round(adjustedAlphaLevel(object),6),", as returned by the 'getAdjustedAlphaLevel' function.", call.=FALSE)
+	  #warning(paste0("The returned adjusted p-values are based on a stage-wise testing approach and should be compared to the adjusted alpha level of "),round(adjustedAlphaLevel(object),6),", as returned by the 'getAdjustedAlphaLevel' function.", call.=FALSE)
+	  warning(paste0("The returned adjusted p-values are based on a stage-wise testing approach and are only valid for the provided target OFDR level of ",object@alpha*100,"%. If a different target OFDR level is of interest, the entire adjustment should be re-run."), call.=FALSE)
 	    genesStageI <- object@adjustedP[,1]<=object@alpha
 	    if(sum(genesStageI)==0){ message(paste0("No genes were found to be significant on a ",alpha*100,"% OFDR level.")) } else{
 	    return(object@adjustedP[genesStageI,])}
 	} else {
-	  warning(paste0("The returned adjusted p-values are based on a stage-wise testing approach and should be compared to the adjusted alpha level of "),round(adjustedAlphaLevel(object),6),", as returned by the 'getAdjustedAlphaLevel' function.", call.=FALSE)
-	    return(object@adjustedP)
+	  #warning(paste0("The returned adjusted p-values are based on a stage-wise testing approach and should be compared to the adjusted alpha level of "),round(adjustedAlphaLevel(object),6),", as returned by the 'getAdjustedAlphaLevel' function.", call.=FALSE)
+	  warning(paste0("The returned adjusted p-values are based on a stage-wise testing approach and are only valid for the provided target OFDR level of ",object@alpha*100,"%. If a different target OFDR level is of interest, the entire adjustment should be re-run."), call.=FALSE)
+	  return(object@adjustedP)
 	}
 }
 
 
 .getResults <- function(object){
     results=matrix(0,nrow=nrow(object@adjustedP),ncol=ncol(object@adjustedP), dimnames=dimnames(object@adjustedP))
-    results[object@adjustedP[,1]<=object@alpha,1] = 1
-    results[,-1][which(object@adjustedP[,-1]<=object@alphaAdjusted)] = 1
+    results[object@adjustedP<=object@alpha,] = 1
     return(results)
 }
 
@@ -264,7 +265,7 @@ setMethod("getAdjustedPValues",signature=signature(object="stageR"),
 setMethod("adjustedAlphaLevel",signature=signature(object="stageR"),
 	  definition=function(object){return(object@alphaAdjusted)})
 
-#' Get significance results accroding to a stage-wise analysis.
+#' Get significance results according to a stage-wise analysis.
 #'
 #' This functions returns a matrix that indicates whether a specific feature is significant for a specific hypothesis of interest according to a stage-wise analysis.
 #'
