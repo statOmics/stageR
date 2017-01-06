@@ -1,8 +1,9 @@
 # stageR
 
-To install the package from the private repo in R please use
+This is the repository for the stageR package. stageR allows user-friendly automated stage-wise analysis of high-throughput genomic data.
 
+To install the package from the GitHub repository in R please use
 ```
 library(devtools)
-install_github("statOmics/stageR",auth_token="cb649b65157aa8cd235a992d99cbe9384fd0eeb2")
+install_github("statOmics/stageR")
 ```
