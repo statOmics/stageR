@@ -69,6 +69,8 @@
       txLevelAdjustments <- sapply(significantGenes,function(gene){
         id <- which(geneForEachTx %in% gene)
         row <- pConfirmation[id,]
+        #make sure names are passed along if only one tx
+        if(length(id)==1) names(row)=rownames(pConfirmation)[id]
         o <- order(row)
         n <- length(row)
         # DTE adjustment: passing screening stage implies 1 false hypothesis
@@ -97,7 +99,7 @@
       significanceOrdering <- order(padjScreen)
       genesStageI <- padjScreen<=alpha
       significantGenes <- names(padjScreen)[genesStageI]
-      geneForEachTx <- tx2gene[match(rownames(pConfirmation),tx2gene[,1]),2]
+      geneForEachTx <- as.character(tx2gene[match(rownames(pConfirmation),tx2gene[,1]),2])
       txLevelAdjustments <- sapply(significantGenes,function(gene){
         id <- which(geneForEachTx %in% gene)
         row <- pConfirmation[id,]
