@@ -23,7 +23,7 @@ The vignette analyses two datasets. The Hammer dataset [@Hammer2010] is a differ
 The package is hosted on GitHub and can be installed with the `devtools` library.
 
 ```{r}
-devtools::install_github("statOmics/stageR",auth_token="cb649b65157aa8cd235a992d99cbe9384fd0eeb2")
+devtools::install_github("statOmics/stageR")
 library(stageR)
 ```
 
