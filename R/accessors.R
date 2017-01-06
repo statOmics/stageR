@@ -131,19 +131,10 @@
     if(!(method %in% c("dte","dtu"))){
       pAdjStage <- cbind(padjScreenReturn,pAdjConfirmation)
       colnames(pAdjStage)[1] <- "padjScreen"
-      #if(order) pAdjStage <- pAdjStage[significanceOrdering,]
     }
     if(method %in% c("dte","dtu")){
       pAdjStage=cbind(pAdjConfirmation,padjScreenReturn)[,2:1]
       colnames(pAdjStage) = c("gene","transcript")
-      #if(order){
-      # ordGenes <- names(pScreen)[significanceOrdering]
-      # #order acc. to gene significance
-      # idList <- sapply(ordGenes,function(gene) which(geneForEachTx%in%gene))
-      # #order tx within genes
-      # idListOrdTx <- lapply(idList, function(x) x[order(pConfirmation[x,])])
-      # pAdjStage <- pAdjStage[unlist(idListOrdTx),]
-      #}
     }
     return(list(pAdjStage=pAdjStage, alphaAdjusted=alphaAdjusted))
 }
