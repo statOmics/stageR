@@ -22,11 +22,11 @@ print.stageRTx <- function(object, ...){
   cat("stageRTx object, containing: \n")
   if(!object@adjusted){
     cat(paste0(length(object@pScreen)," screening hypothesis p-values \n"))
-    cat(paste0(ncol(object@pConfirmation)," confirmation hypotheses for ",nrow(object@pConfirmation)," genes \n"))
+    cat(paste0(ncol(object@pConfirmation)," confirmation hypothesis for ",nrow(object@pConfirmation)," transcripts \n"))
   }
   if(object@adjusted){
     cat(paste0(length(object@pScreen)," screening hypothesis p-values \n"))
-    cat(paste0(ncol(object@pConfirmation)," confirmation hypotheses for",nrow(object@pConfirmation)," genes \n"))
+    cat(paste0(ncol(object@pConfirmation)," confirmation hypothesis for",nrow(object@pConfirmation)," transcripts \n"))
     cat(paste0("adjusted p-values on a ",object@alpha*100,"% OFDR level with the following FWER correction method: ",object@method," \n"))
 
   }

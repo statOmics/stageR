@@ -16,7 +16,7 @@ The stage-wise analysis has been adopted from [@Heller2009] and consists of a sc
 In the confirmation stage, only genes passing the screening stage are considered for analysis. For those genes, every hypothesis of interest is assessed separately and multiple testing correction is performed across hypotheses within a gene to control the FWER on the BH-adjusted significance level of the screening stage.
 `stageR` provides an automated way to perform stage-wise testing, given p-values for the screening and confirmation stages. A number of FWER control procedures that take into account the logical relations among the hypotheses are implemented. Since the logical relations may be specific to the experiment, the user can also specify an adjustment deemed appropriate.
 
-The vignette analyses two datasets. The Hammer dataset [@Hammer2010] is a differential gene expression analysis for an experiment with a complex design. This type of analyses are supported by the `stageR` class. The Renn dataset [@Renn2012] analyses differential transcript usage (DTU) in tumoral versus normal tissue in Chinese patients. Transcript-level analyses are supported by the `stageRTx` class. 
+The vignette analyses two datasets. The Hammer dataset [@Hammer2010] is a differential gene expression analysis for an experiment with a complex design. This type of analyses are supported by the `stageR` class. The Renn dataset [@Ren2012] analyses differential transcript usage (DTU) in tumoral versus normal tissue in Chinese patients. Transcript-level analyses are supported by the `stageRTx` class. 
 
 # Installing and loading the package
 
@@ -139,14 +139,14 @@ Note that when a gene passed the screening hypothesis in the Hammer experiment, 
 
 
 ```{r}
-adjustedPSW <- stageWiseAdjustment(object=stageRObj, method="none", alpha=0.05)
+stageRObj <- stageWiseAdjustment(object=stageRObj, method="none", alpha=0.05)
 ```
 
 We can explore the results of the stage-wise analysis by querying the object returned by `stageWiseAdjustment`. **Note that the confirmation stage adjusted p-values returned by the function are only valid for the OFDR level provided. If a different OFDR level is of interest, the stage-wise testing adjustment of p-values should be re-run entirely with the other OFDR level specified in `stageWiseAdjustment`.** The adjusted p-values from the confirmation stage can be accessed with the `getAdjustedPValues` function
 
 ```{r}
-head(getAdjustedPValues(adjustedPSW, onlySignificantGenes=FALSE, order=FALSE))
-head(getAdjustedPValues(adjustedPSW, onlySignificantGenes=TRUE, order=TRUE))
+head(getAdjustedPValues(stageRObj, onlySignificantGenes=FALSE, order=FALSE))
+head(getAdjustedPValues(stageRObj, onlySignificantGenes=TRUE, order=TRUE))
 ```
 
 and may either return all p-values or only those from the significant genes, as specified by the `onlySignificantGenes` argument which can then be ordered or not as specified by the `order` argument. 
@@ -154,7 +154,7 @@ and may either return all p-values or only those from the significant genes, as 
 Finally, the `getResults` function returns a binary matrix where rows correspond to features and columns correspond to hypotheses, including the screening hypothesis. For every feature $\times$ hypothesis combination, it indicates whether the test is significant (1) or not (0) according to the stage-wise testing procedure.
 
 ```{r}
-res <- getResults(adjustedPSW)
+res <- getResults(stageRObj)
 head(res)
 colSums(res) #stage-wise analysis results
 ```
@@ -162,6 +162,7 @@ colSums(res) #stage-wise analysis results
 The `adjustment` argument from the `stageWiseAdjustment` function allows the user to specify the FWER adjustment correction. It requires a numeric vector of the same length as the number of columns in `pConfirmation`. The first element of the vector is the adjustment for the most significant p-value of the gene, the second element for the second most significant p-value etc. Since the Hammer dataset did not require any adjustment, identical results are obtained when manually specifying the adjustments to equal $1$.
 
 ```{r}
+stageRObj <- stageR(pScreen=pScreen, pConfirmation=pConfirmation, pScreenAdjusted=FALSE)
 adjustedPSW <- stageWiseAdjustment(object=stageRObj, method="user", alpha=0.05, adjustment=c(1,1,1))
 res <- getResults(adjustedPSW)
 colSums(res)
@@ -210,7 +211,6 @@ dxd <- estimateSizeFactors(dxd)
 dxd <- estimateDispersions(dxd)
 dxd <- nbinomLRT(dxd, reduced=~ sample + exon + patient)
 dxr <- DEXSeqResults(dxd)
-dxr$padj[is.na(dxr$padj)]=1
 qvalDxr <- perGeneQValue(dxr)
 ```
 
@@ -235,30 +235,41 @@ Next we build an object from the `stageRTx` class and indicate that the screenin
 
 ```{r}
 stageRObj <- stageRTx(pScreen=pScreen, pConfirmation=pConfirmation, pScreenAdjusted=TRUE, tx2gene=tx2gene)
-adjustedPStageWise <- stageWiseAdjustment(object=stageRObj, method="dtu", alpha=0.05)
+stageRObj <- stageWiseAdjustment(object=stageRObj, method="dtu", alpha=0.05)
 ```
 
 We can then explore the results using a range of accessor functions. The significant genes can be returned with the `getSignificantGenes` function.
 
 ```{r}
-head(getSignificantGenes(adjustedPStageWise))
+head(getSignificantGenes(stageRObj))
 ```
 
 Similar, the significant transcripts can be returned with `getSignificantTx`.
 
 ```{r}
-head(getSignificantTx(adjustedPStageWise))
+head(getSignificantTx(stageRObj))
 ```
 
 The stage-wise adjusted p-values are returned using the `getAdjustedPValues` function. The screening (gene) hypothesis p-values were adjusted according to the BH FDR criterion and the confirmation (transcript) hypotheses were adjusted to control the FWER with the method specified in `stageWiseAdjustment` and are subsequently controlled according to the BH-adjusted significance level of the screening stage. Hence, the confirmation p-values returned from this function can be directly compared to the significance level `alpha` as provided in the `stageWiseAdjustment` function. `getAdjustedPValues` returns a matrix where the different rows correspond to transcripts and the respective gene and transcript identifiers are given in the first two columns. Transcript-level adjusted p-values for genes not passing the screening stage are set to `NA` by default. Note, that the stage-wise adjusted p-values are only valid for the provided significance level and must not be compared to a different significance level. If this would be of interest, the entire stage-wise testing adjustment should be re-run with the other significance level provided in `alpha`.
 
 ```{r}
-padj = getAdjustedPValues(adjustedPStageWise, order=TRUE, onlySignificantGenes=FALSE)
+padj = getAdjustedPValues(stageRObj, order=TRUE, onlySignificantGenes=FALSE)
 head(padj)
 ```
 
 The output indeed shows that 2 genes and three transcripts are significant because their adjusted p-values are below the specified `alpha` level of $0.05$. The third gene in the list is not significant and thus the p-value of the transcript is set to `NA`.
 
+### Note on a stage-wise DEXSeq analysis.
+
+By default, DEXSeq performs an independent filtering step. This may result in a number of genes that have been filtered and thus no q-value for these genes is given in the output of `perGeneQValue`. This can cause an error in the stage-wise analysis, since we have confirmation stage p-values for transcripts but no q-value for their respective genes. In order to avoid this, one should filter these transcripts in the `pConfirmation` and `tx2gene` objects.
+
+```{r}
+rowsNotFiltered=tx2gene[,2]%in%names(qvalDxr)
+pConfirmation=matrix(pConfirmation[rowsNotFiltered,],ncol=1,dimnames=list(dxr$featureID[rowsNotFiltered],"transcript"))
+tx2gene <- tx2gene[rowsNotFiltered,]
+```
+
+After which the stage-wise analysis may proceed.
 
 # References
 
