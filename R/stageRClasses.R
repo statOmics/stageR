@@ -11,10 +11,10 @@
 #' @slot pScreenAdjusted logical, indicating whether the supplied p-values for the screening hypothesis have already been adjusted for multiplicity according to the FDR.
 #' @slot tx2gene matrix with transcript IDs in the first column and gene IDs in the second column to be used for DTE and DTU analysis. All rownames from \code{pConfirmation} should match with a transcript ID and all names from \code{pScreen} should match with a gene ID.
 #' @references
-#' Van den Berge K., Soneson C., Robinson M.D., Clement L.
-#' Heller
-#' Holm 1979
-#' Shaffer
+#' Van den Berge K., Soneson C., Robinson M.D., Clement L. "A general and powerful stage-wise testing procedure for differential expression and differential transcript usage." Submitted, 2017.
+#' R. Heller, E. Manduchi, G. R. Grant, and W. J. Ewens, “A flexible two-stage procedure for identifying gene sets that are differentially expressed.” Bioinformatics (Oxford, England), vol. 25, pp. 1019–25, 2009.
+#' S. Holm, “A Simple Sequentially Rejective Multiple Test Procedure,” Scandinavian Journal of Statistics, vol. 6, no. 2, pp. 65–70, 1979.
+#' J. P. Shaffer, “Modified Sequentially Rejective Multiple Test Procedures,” Journal of the American Statistical Asso- ciation, vol. 81, p. 826, 1986.
 #' @name stageRClass
 #' @rdname stageRClass
 #' @exportClass stageR
