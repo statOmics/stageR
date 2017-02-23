@@ -228,12 +228,15 @@
 #' @param alpha the OFDR on which to control the two-stage analysis.
 #' @param adjustment a user-defined adjustment of the confirmation stage p-values. Only applicable when \code{method} is \code{"none"} and ignored otherwise.
 #' @param tx2gene Only applicable when  \code{method} is \code{"dte"} or \code{"dtu"}.  A \code{\link[base]{data.frame}} with transcript IDs in the first columns and gene IDs in the second column. The rownames from \code{pConfirmation} must be contained in the transcript IDs from \code{tx2gene}, and the names from \code{pScreen} must be contained in the gene IDs.
-#' @param order logical, specifying whether the adjusted p-values should be ordered according to the significance of the screening hypothesis.
 #' @references
-#' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. Submitted.
+#' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
+#'
 #' R. Heller, E. Manduchi, G. R. Grant, and W. J. Ewens, “A flexible two-stage procedure for identifying gene sets that are differentially expressed.” Bioinformatics (Oxford, England), vol. 25, pp. 1019–25, 2009.
+#'
 #' S. Holm, “A Simple Sequentially Rejective Multiple Test Procedure,” Scandinavian Journal of Statistics, vol. 6, no. 2, pp. 65–70, 1979.
+#'
 #' J. P. Shaffer, “Modified Sequentially Rejective Multiple Test Procedures,” Journal of the American Statistical Asso- ciation, vol. 81, p. 826, 1986.
+#'
 #' @examples
 #' pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
 #' names(pScreen)=paste0("gene",1:300)
@@ -326,7 +329,8 @@ setMethod("getPConfirmation",signature=signature(object="stageRTx"),
 #' stageRObj <- stageWiseAdjustment(stageRObj, method="holm", alpha=0.05)
 #' head(getAdjustedPValues(stageRObj))
 #' @references
-#' Van den Berge K., Soneson C., Robinson M.D., Clement L. "A general and powerful stage-wise testing procedure for differential expression and differential transcript usage." Submitted, 2017.
+#' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
+#'
 #' @name getAdjustedPValues
 #' @rdname getAdjustedPValues
 #' @export
@@ -357,8 +361,11 @@ setMethod("getAdjustedPValues",signature=signature(object="stageRTx"),
 #' stageRObj <- stageWiseAdjustment(stageRObj, method="holm", alpha=0.05)
 #' adjustedAlphaLevel(stageRObj)
 #' @references
-#' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. Submitted.
-#' R. Heller, E. Manduchi, G. R. Grant, and W. J. Ewens, “A flexible two-stage procedure for identifying gene sets that are differentially expressed.” Bioinformatics (Oxford, England), vol. 25, pp. 1019–25, 2009.#' @name adjustedAlphaLevel
+#' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
+#'
+#' R. Heller, E. Manduchi, G. R. Grant, and W. J. Ewens, “A flexible two-stage procedure for identifying gene sets that are differentially expressed.” Bioinformatics (Oxford, England), vol. 25, pp. 1019–25, 2009.
+#'
+#' @name adjustedAlphaLevel
 #' @rdname adjustedAlphaLevel
 #' @export
 setMethod("adjustedAlphaLevel",signature=signature(object="stageR"),
@@ -388,7 +395,8 @@ setMethod("adjustedAlphaLevel",signature=signature(object="stageRTx"),
 #' stageRObj <- stageWiseAdjustment(stageRObj, method="holm", alpha=0.05)
 #' head(getResults(stageRObj))
 #' @references
-#' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. Submitted.
+#' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
+#'
 #' @name getResults
 #' @rdname getResults
 #' @export
@@ -419,7 +427,8 @@ setMethod("getResults",signature=signature(object="stageR"),
 #' stageRObj <- stageWiseAdjustment(stageRObj, method="dte", alpha=0.05)
 #' head(getSignificantGenes(stageRObj))
 #' @references
-#' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. Submitted.
+#' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
+#'
 #' @name getSignificantGenes
 #' @rdname getSignificantGenes
 #' @export
