@@ -26,3 +26,5 @@ setGeneric("getTx2gene", function(object, ...) standardGeneric("getTx2gene"))
 setGeneric("isPScreenAdjusted", function(object, ...) standardGeneric("isPScreenAdjusted"))
 
 setGeneric("isAdjusted", function(object, ...) standardGeneric("isAdjusted"))
+
+setGeneric("getMethod", function(object, ...) standardGeneric("getMethod"))
