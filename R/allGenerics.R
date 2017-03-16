@@ -20,3 +20,7 @@ setGeneric("getSignificantGenes", function(object, ...) standardGeneric("getSign
 setGeneric("getSignificantTx", function(object, ...) standardGeneric("getSignificantTx"))
 
 setGeneric("getAlpha", function(object, ...) standardGeneric("getAlpha"))
+
+setGeneric("getTx2gene", function(object, ...) standardGeneric("getTx2gene"))
+
+setGeneric("isPScreenAdjusted", function(object, ...) standardGeneric("isPScreenAdjusted"))

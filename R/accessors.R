@@ -168,7 +168,7 @@
 .getAdjustedPTx <- function(object, onlySignificantGenes=FALSE, order=TRUE){
   ## this function is used in getAdjustedPValues to return the adjusted p-values for a stageRTx class.
   warning(paste0("The returned adjusted p-values are based on a stage-wise testing approach and are only valid for the provided target OFDR level of ",getAlpha(object)*100,"%. If a different target OFDR level is of interest, the entire adjustment should be re-run."), call.=FALSE)
-  tx2gene=object@tx2gene
+  tx2gene=getTx2gene(object)
   pConfirmation=getPConfirmation(object)
   geneForEachTx <- tx2gene[match(rownames(pConfirmation),tx2gene[,1]),2]
 
@@ -254,7 +254,7 @@ setMethod("stageWiseAdjustment",signature=signature(object="stageR", method="cha
 	  definition=function(object, method, alpha, ...){
 	      pScreen=getPScreen(object)
 	      pConfirmation=getPConfirmation(object)
-	      pScreenAdjusted=object@pScreenAdjusted
+	      pScreenAdjusted=isPScreenAdjusted(object)
 	      stageAdjPValues <- .stageWiseTest(pScreen=pScreen, pConfirmation=pConfirmation, alpha=alpha, method=method,  pScreenAdjusted=pScreenAdjusted, ...)
 	      object@adjustedP <- stageAdjPValues[["pAdjStage"]]
 	      object@alphaAdjusted <- stageAdjPValues[["alphaAdjusted"]]
@@ -267,8 +267,8 @@ setMethod("stageWiseAdjustment",signature=signature(object="stageRTx", method="c
           definition=function(object, method, alpha, ...){
             pScreen=getPScreen(object)
             pConfirmation=getPConfirmation(object)
-            pScreenAdjusted=object@pScreenAdjusted
-            tx2gene=object@tx2gene
+            pScreenAdjusted=isPScreenAdjusted(object)
+            tx2gene=getTx2gene(object)
             stageAdjPValues <- .stageWiseTest(pScreen=pScreen, pConfirmation=pConfirmation, alpha=alpha, method=method,  pScreenAdjusted=pScreenAdjusted, tx2gene=tx2gene, ...)
           object@adjustedP <- stageAdjPValues[["pAdjStage"]]
           object@alphaAdjusted <- stageAdjPValues[["alphaAdjusted"]]
@@ -494,8 +494,6 @@ setMethod("getSignificantTx",signature=signature(object="stageRTx"),
 #' This functions returns the significance level on which the stage-wise adjustment is based.
 #'
 #' @param object an object of the \code{\link{stageRClass}} or \code{\link{stageRTxClass}} class.
-#' @details
-#' The function returns FDR adjusted p-values for the screening hypothesis and stage-wise adjusted p-values for the confirmation hypothesis p-values. For features that were not significant in the screening hypothesis, the confirmation stage adjusted p-values are set to .
 #' @examples
 #' pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
 #' names(pScreen)=paste0("gene",1:300)
@@ -521,3 +519,59 @@ setMethod("getAlpha",signature=signature(object="stageRTx"),
             return(object@alpha)
           })
 
+#' Retrieve the data frame linking genes to transcripts.
+#'
+#' This functions returns a data frame that links the genes with the transcripts being analysed.
+#'
+#' @param object an object of the \code{\link{stageRTxClass}} class.
+#' @examples
+#' #make identifiers linking transcripts to genes
+#' set.seed(1)
+#' genes=paste0("gene",sample(1:200,1000,replace=TRUE))
+#' nGenes=length(table(genes))
+#' transcripts=paste0("tx",1:1000)
+#' tx2gene=data.frame(transcripts,genes)
+#' #gene-wise q-values
+#' pScreen=c(seq(1e-10,1e-2,length.out=nGenes-100),seq(1e-2,.2,length.out=50),seq(50))
+#' names(pScreen)=names(table(genes)) #discards genes that are not simulated
+#' pConfirmation=matrix(runif(1000),nrow=1000,ncol=1)
+#' rownames(pConfirmation)=transcripts
+#' stageRObj <- stageRTx(pScreen=pScreen, pConfirmation=pConfirmation ,pScreenAdjusted=TRUE, tx2gene=tx2gene)
+#' getTx2gene(stageRObj)
+#' @references
+#' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
+#'
+#' @name getTx2gene
+#' @rdname getTx2gene
+#' @export
+setMethod("getTx2gene",signature=signature(object="stageRTx"),
+          definition=function(object, ...){
+            return(object@tx2gene)
+          })
+
+#' Are the screening p-values adjusted for multiplicity?
+#'
+#' This functions returns a logical stating whether the screening hypothesis p-values are already adjusted for multiple testing according to the BH FDR criterion.
+#'
+#' @param object an object of the \code{\link{stageRClass}} or \code{\link{stageRTxClass}} class.
+#' @examples
+#' pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
+#' names(pScreen)=paste0("gene",1:300)
+#' pConfirmation=matrix(runif(900),nrow=300,ncol=3)
+#' dimnames(pConfirmation)=list(paste0("gene",1:300),c("H1","H2","H3"))
+#' stageRObj <- stageR(pScreen=pScreen, pConfirmation=pConfirmation)
+#' isPScreenAdjusted(stageRObj)
+#' @references
+#' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
+#'
+#' @name isPScreenAdjusted
+#' @rdname isPScreenAdjusted
+#' @export
+setMethod("isPScreenAdjusted",signature=signature(object="stageR"),
+          definition=function(object, ...){
+            return(object@pScreenAdjusted)
+          })
+setMethod("isPScreenAdjusted",signature=signature(object="stageRTx"),
+          definition=function(object, ...){
+            return(object@pScreenAdjusted)
+          })
