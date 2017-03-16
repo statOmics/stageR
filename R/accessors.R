@@ -139,9 +139,10 @@
 }
 
 .getAdjustedP <- function(object, onlySignificantGenes=FALSE, order=TRUE){
-  warning(paste0("The returned adjusted p-values are based on a stage-wise testing approach and are only valid for the provided target OFDR level of ",object@alpha*100,"%. If a different target OFDR level is of interest, the entire adjustment should be re-run."), call.=FALSE)
+  ## this function is used in getAdjustedPValues to return the adjusted p-values for a stageR class.
+  warning(paste0("The returned adjusted p-values are based on a stage-wise testing approach and are only valid for the provided target OFDR level of ",getAlpha(object)*100,"%. If a different target OFDR level is of interest, the entire adjustment should be re-run."), call.=FALSE)
 	if(onlySignificantGenes){ #significant genes
-	    genesStageI <- object@adjustedP[,1]<=object@alpha
+	    genesStageI <- object@adjustedP[,1]<=getAlpha(object)
 	    if(sum(genesStageI)==0){
 	      message(paste0("No genes were found to be significant on a ",alpha*100,"% OFDR level."))
 	      } else {
@@ -165,13 +166,14 @@
 }
 
 .getAdjustedPTx <- function(object, onlySignificantGenes=FALSE, order=TRUE){
-  warning(paste0("The returned adjusted p-values are based on a stage-wise testing approach and are only valid for the provided target OFDR level of ",object@alpha*100,"%. If a different target OFDR level is of interest, the entire adjustment should be re-run."), call.=FALSE)
+  ## this function is used in getAdjustedPValues to return the adjusted p-values for a stageRTx class.
+  warning(paste0("The returned adjusted p-values are based on a stage-wise testing approach and are only valid for the provided target OFDR level of ",getAlpha(object)*100,"%. If a different target OFDR level is of interest, the entire adjustment should be re-run."), call.=FALSE)
   tx2gene=object@tx2gene
   pConfirmation=getPConfirmation(object)
   geneForEachTx <- tx2gene[match(rownames(pConfirmation),tx2gene[,1]),2]
 
   if(onlySignificantGenes){ #significant genes
-    genesStageI <- which(object@adjustedP[,1]<=object@alpha)
+    genesStageI <- which(object@adjustedP[,1]<=getAlpha(object))
     if(sum(genesStageI)==0){
       message(paste0("No genes were found to be significant on a ",alpha*100,"% OFDR level."))
     } else {
@@ -212,8 +214,9 @@
 
 .getResults <- function(object){
   if(class(object)!="stageR") stop("object should be from the stageR class.")
-    results=matrix(0,nrow=nrow(object@adjustedP),ncol=ncol(object@adjustedP), dimnames=dimnames(object@adjustedP))
-    results[object@adjustedP<=object@alpha] = 1
+    adjustedPValues = getAdjustedPValues(object, onlySignificantGenes=FALSE, order=FALSE)
+    results=matrix(0,nrow=nrow(adjustedPValues),ncol=ncol(adjustedPValues), dimnames=dimnames(adjustedPValues))
+    results[adjustedPValues<=getAlpha(object)] = 1
     return(results)
 }
 
@@ -320,7 +323,7 @@ setMethod("getPConfirmation",signature=signature(object="stageRTx"),
 #' @param onlySignificantGenes logical. If FALSE (default), all genes are returned. If TRUE, only the genes significant for the screening hypothesis are returned.
 #' @param order logical. If TRUE (default), the returned matrix of adjusted p-values are ordered based on the screening hypothesis adjusted p-value.
 #' @details
-#' The function returns FDR adjusted p-values for the screening hypothesis and stage-wise adjusted p-values for the confirmation hypothesis p-values. For features that were not significant in the screening hypothesis, the confirmation stage adjusted p-values are set to 1.
+#' The function returns FDR adjusted p-values for the screening hypothesis and stage-wise adjusted p-values for the confirmation hypothesis p-values. For features that were not significant in the screening hypothesis, the confirmation stage adjusted p-values are set to \code{NA}.
 #' @examples
 #' pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
 #' names(pScreen)=paste0("gene",1:300)
@@ -440,7 +443,7 @@ setMethod("getSignificantGenes",signature=signature(object="stageRTx"),
             adjustedPValues=getAdjustedPValues(object, onlySignificantGenes=FALSE, order=FALSE)
             geneIDs=adjustedPValues$geneID
             pScreenAdjusted=adjustedPValues[,"gene"]
-            significantGeneIDs=which(pScreenAdjusted<=object@alpha)
+            significantGeneIDs=which(pScreenAdjusted<=getAlpha(object))
             significantGeneNames=geneIDs[significantGeneIDs]
             geneAdjustedPValues=adjustedPValues[significantGeneIDs,"gene"]
             dups=duplicated(significantGeneNames)
@@ -480,9 +483,41 @@ setMethod("getSignificantTx",signature=signature(object="stageRTx"),
             if(class(object)!="stageRTx") stop("this function only works on an object of class stageRTx")
             adjustedPValues=getAdjustedPValues(object, onlySignificantGenes=FALSE, order=FALSE)
             txIDs=adjustedPValues$txID
-            significantTxIDs=which(adjustedPValues[,"transcript"]<=object@alpha)
+            significantTxIDs=which(adjustedPValues[,"transcript"]<=getAlpha(object))
             significantTxNames=txIDs[significantTxIDs]
             significantTranscripts=matrix(adjustedPValues[significantTxIDs,"transcript"],ncol=1,dimnames=list(significantTxNames,"stage-wise adjusted p-value"))
             return(significantTranscripts)
+          })
+
+#' Retrieve the significance level for the stage-wise adjustment.
+#'
+#' This functions returns the significance level on which the stage-wise adjustment is based.
+#'
+#' @param object an object of the \code{\link{stageRClass}} or \code{\link{stageRTxClass}} class.
+#' @details
+#' The function returns FDR adjusted p-values for the screening hypothesis and stage-wise adjusted p-values for the confirmation hypothesis p-values. For features that were not significant in the screening hypothesis, the confirmation stage adjusted p-values are set to .
+#' @examples
+#' pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
+#' names(pScreen)=paste0("gene",1:300)
+#' pConfirmation=matrix(runif(900),nrow=300,ncol=3)
+#' dimnames(pConfirmation)=list(paste0("gene",1:300),c("H1","H2","H3"))
+#' stageRObj <- stageR(pScreen=pScreen, pConfirmation=pConfirmation)
+#' stageRObj <- stageWiseAdjustment(stageRObj, method="holm", alpha=0.05)
+#' getAlpha(stageRObj)
+#' @references
+#' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
+#'
+#' @name getAlpha
+#' @rdname getAlpha
+#' @export
+setMethod("getAlpha",signature=signature(object="stageR"),
+          definition=function(object, ...){
+            if(is.null(object@alpha)) stop("No significance level was specified yet. Maybe you need to run stageWiseAdjustment first.")
+            return(object@alpha)
+          })
+setMethod("getAlpha",signature=signature(object="stageRTx"),
+          definition=function(object, ...){
+            if(is.null(object@alpha)) stop("No significance level was specified yet. Maybe you need to run stageWiseAdjustment first.")
+            return(object@alpha)
           })
 

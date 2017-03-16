@@ -18,3 +18,5 @@ setGeneric("getResults", function(object, ...) standardGeneric("getResults"))
 setGeneric("getSignificantGenes", function(object, ...) standardGeneric("getSignificantGenes"))
 
 setGeneric("getSignificantTx", function(object, ...) standardGeneric("getSignificantTx"))
+
+setGeneric("getAlpha", function(object, ...) standardGeneric("getAlpha"))
