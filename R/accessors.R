@@ -477,11 +477,12 @@ setMethod("getSignificantGenes",signature=signature(object="stageRTx"),
 setMethod("getSignificantTx",signature=signature(object="stageRTx"),
           definition=function(object){
             if(!object@adjusted) stop("adjust p-values first using stageWiseAdjustment")
-            IDs=rownames(object@adjustedP)
-            txIDs=unlist(lapply(strsplit(IDs,split=".",fixed=TRUE),function(x) x[2]))
-            significantTxIDs=which(object@adjustedP[,2]<=object@alpha)
+            if(class(object)!="stageRTx") stop("this function only works on an object of class stageRTx")
+            adjustedPValues=getAdjustedPValues(object, onlySignificantGenes=FALSE, order=FALSE)
+            txIDs=adjustedPValues$txID
+            significantTxIDs=which(adjustedPValues[,"transcript"]<=object@alpha)
             significantTxNames=txIDs[significantTxIDs]
-            significantTranscripts=matrix(object@adjustedP[significantTxIDs,2],ncol=1,dimnames=list(significantTxNames,"stage-wise adjusted p-value"))
+            significantTranscripts=matrix(adjustedPValues[significantTxIDs,"transcript"],ncol=1,dimnames=list(significantTxNames,"stage-wise adjusted p-value"))
             return(significantTranscripts)
           })
 
