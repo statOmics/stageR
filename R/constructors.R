@@ -49,7 +49,7 @@ setValidity("stageR",function(object){
 
   if(!identical(as.character(names(pScreen)),as.character(rownames(pConfirmation)))) message("The features (names) in pScreen are not identical to the features (rownames) in pConfirmation.")
 
-  if(any(is.na(object@pConfirmation))) message("NA confirmation stage p-values are not allowed.")
+  if(any(is.na(getPConfirmation(object)))) message("NA confirmation stage p-values are not allowed.")
 
 })
 
@@ -58,7 +58,7 @@ setValidity("stageRTx",function(object){
 
   if(any(is.na(match(names(pScreen),tx2gene[,2])))) message("not all gene names in pScreen match with a gene ID from the tx2gene object.")
 
-  if(any(is.na(object@pConfirmation))) message("NA confirmation stage p-values are not allowed.")
+  if(any(is.na(getPConfirmation(object)))) message("NA confirmation stage p-values are not allowed.")
 
 })
 

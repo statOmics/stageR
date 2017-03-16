@@ -340,12 +340,12 @@ setMethod("getPConfirmation",signature=signature(object="stageRTx"),
 #' @export
 setMethod("getAdjustedPValues",signature=signature(object="stageR"),
 	  definition=function(object, ...){
-	    if(!object@adjusted) stop("adjust p-values first using stageWiseAdjustment")
+	    if(!isAdjusted(object)) stop("adjust p-values first using stageWiseAdjustment")
 	      return(.getAdjustedP(object=object, ...))
 	  })
 setMethod("getAdjustedPValues",signature=signature(object="stageRTx"),
           definition=function(object, ...){
-            if(!object@adjusted) stop("adjust p-values first using stageWiseAdjustment")
+            if(!isAdjusted(object)) stop("adjust p-values first using stageWiseAdjustment")
             return(.getAdjustedPTx(object=object, ...))
           })
 
@@ -374,12 +374,12 @@ setMethod("getAdjustedPValues",signature=signature(object="stageRTx"),
 #' @export
 setMethod("adjustedAlphaLevel",signature=signature(object="stageR"),
 	  definition=function(object){
-	    if(!object@adjusted) stop("adjust p-values first using stageWiseAdjustment")
+	    if(!isAdjusted(object)) stop("adjust p-values first using stageWiseAdjustment")
 	    return(object@alphaAdjusted)
 	    })
 setMethod("adjustedAlphaLevel",signature=signature(object="stageRTx"),
           definition=function(object){
-            if(!object@adjusted) stop("adjust p-values first using stageWiseAdjustment")
+            if(!isAdjusted(object)) stop("adjust p-values first using stageWiseAdjustment")
             return(object@alphaAdjusted)
             })
 
@@ -406,7 +406,7 @@ setMethod("adjustedAlphaLevel",signature=signature(object="stageRTx"),
 #' @export
 setMethod("getResults",signature=signature(object="stageR"),
 	  definition=function(object){
-	    if(!object@adjusted) stop("adjust p-values first using stageWiseAdjustment")
+	    if(!isAdjusted(object)) stop("adjust p-values first using stageWiseAdjustment")
 	    return(.getResults(object))
 	    })
 
@@ -438,7 +438,7 @@ setMethod("getResults",signature=signature(object="stageR"),
 #' @export
 setMethod("getSignificantGenes",signature=signature(object="stageRTx"),
           definition=function(object){
-            if(!object@adjusted) stop("adjust p-values first using stageWiseAdjustment")
+            if(!isAdjusted(object)) stop("adjust p-values first using stageWiseAdjustment")
             if(class(object)!="stageRTx") stop("this function only works on an object of class stageRTx")
             adjustedPValues=getAdjustedPValues(object, onlySignificantGenes=FALSE, order=FALSE)
             geneIDs=adjustedPValues$geneID
@@ -479,7 +479,7 @@ setMethod("getSignificantGenes",signature=signature(object="stageRTx"),
 #' @export
 setMethod("getSignificantTx",signature=signature(object="stageRTx"),
           definition=function(object){
-            if(!object@adjusted) stop("adjust p-values first using stageWiseAdjustment")
+            if(!isAdjusted(object)) stop("adjust p-values first using stageWiseAdjustment")
             if(class(object)!="stageRTx") stop("this function only works on an object of class stageRTx")
             adjustedPValues=getAdjustedPValues(object, onlySignificantGenes=FALSE, order=FALSE)
             txIDs=adjustedPValues$txID
@@ -574,4 +574,33 @@ setMethod("isPScreenAdjusted",signature=signature(object="stageR"),
 setMethod("isPScreenAdjusted",signature=signature(object="stageRTx"),
           definition=function(object, ...){
             return(object@pScreenAdjusted)
+          })
+
+#' Has stage-wise adjustment already been performed on the object?
+#'
+#' This functions returns a logical stating whether the p-values have already been adjusted according to the stage-wise method.
+#'
+#' @param object an object of the \code{\link{stageRClass}} or \code{\link{stageRTxClass}} class.
+#' @examples
+#' pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
+#' names(pScreen)=paste0("gene",1:300)
+#' pConfirmation=matrix(runif(900),nrow=300,ncol=3)
+#' dimnames(pConfirmation)=list(paste0("gene",1:300),c("H1","H2","H3"))
+#' stageRObj <- stageR(pScreen=pScreen, pConfirmation=pConfirmation)
+#' isAdjusted(stageRObj)
+#' stageRObj <- stageWiseAdjustment(stageRObj, method="holm", alpha=0.05)
+#' isAdjusted(stageRObj)
+#' @references
+#' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
+#'
+#' @name isAdjusted
+#' @rdname isAdjusted
+#' @export
+setMethod("isAdjusted",signature=signature(object="stageR"),
+          definition=function(object, ...){
+            return(object@adjusted)
+          })
+setMethod("isAdjusted",signature=signature(object="stageRTx"),
+          definition=function(object, ...){
+            return(object@adjusted)
           })
