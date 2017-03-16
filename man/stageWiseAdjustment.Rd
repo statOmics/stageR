@@ -18,22 +18,26 @@
 \item{adjustment}{a user-defined adjustment of the confirmation stage p-values. Only applicable when \code{method} is \code{"none"} and ignored otherwise.}
 
 \item{tx2gene}{Only applicable when  \code{method} is \code{"dte"} or \code{"dtu"}.  A \code{\link[base]{data.frame}} with transcript IDs in the first columns and gene IDs in the second column. The rownames from \code{pConfirmation} must be contained in the transcript IDs from \code{tx2gene}, and the names from \code{pScreen} must be contained in the gene IDs.}
-
-\item{order}{logical, specifying whether the adjusted p-values should be ordered according to the significance of the screening hypothesis.}
 }
 \description{
 This function will adjust p-values according to a hierarchical two-stage testing paradigm.
 }
 \examples{
 pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
-stageRObj <- stageR(pScreen=pScreen, pConfirmation=matrix(runif(3000),nrow=1000,ncol=3))
-adjustedP <- stageWiseAdjustment(stageRObj, method="holm", alpha=0.05)
-getAdjustedPValues(adjustedP, onlySignificantGenes=TRUE)
+names(pScreen)=paste0("gene",1:300)
+pConfirmation=matrix(runif(900),nrow=300,ncol=3)
+dimnames(pConfirmation)=list(paste0("gene",1:300),c("H1","H2","H3"))
+stageRObj <- stageR(pScreen=pScreen, pConfirmation=pConfirmation)
+stageRObj <- stageWiseAdjustment(stageRObj, method="holm", alpha=0.05)
+getAdjustedPValues(stageRObj, onlySignificantGenes=TRUE)
 }
 \references{
-K. Van den Berge, C. Soneson, M.D. Robinson, and L. Clement, "A generic stage-wise testing procedure for differential expression and differential transcript usage." To be submitted.
+Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
+
 R. Heller, E. Manduchi, G. R. Grant, and W. J. Ewens, “A flexible two-stage procedure for identifying gene sets that are differentially expressed.” Bioinformatics (Oxford, England), vol. 25, pp. 1019–25, 2009.
+
 S. Holm, “A Simple Sequentially Rejective Multiple Test Procedure,” Scandinavian Journal of Statistics, vol. 6, no. 2, pp. 65–70, 1979.
+
 J. P. Shaffer, “Modified Sequentially Rejective Multiple Test Procedures,” Journal of the American Statistical Asso- ciation, vol. 81, p. 826, 1986.
 }
 

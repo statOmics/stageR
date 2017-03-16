@@ -1,6 +1,5 @@
 #' @include stageRClasses.R allGenerics.R
 
-
 .stageWiseTest <- function(pScreen, pConfirmation, alpha, method=c("none","holm","dte","dtu","user"), adjustment=NULL, tx2gene=NULL, pScreenAdjusted){
     method <- match.arg(method,c("none","holm","dte","dtu","user"))
 
@@ -168,7 +167,7 @@
 .getAdjustedPTx <- function(object, onlySignificantGenes=FALSE, order=TRUE){
   warning(paste0("The returned adjusted p-values are based on a stage-wise testing approach and are only valid for the provided target OFDR level of ",object@alpha*100,"%. If a different target OFDR level is of interest, the entire adjustment should be re-run."), call.=FALSE)
   tx2gene=object@tx2gene
-  pConfirmation=object@pConfirmation
+  pConfirmation=getPConfirmation(object)
   geneForEachTx <- tx2gene[match(rownames(pConfirmation),tx2gene[,1]),2]
 
   if(onlySignificantGenes){ #significant genes
@@ -250,8 +249,8 @@
 #' @export
 setMethod("stageWiseAdjustment",signature=signature(object="stageR", method="character", alpha="numeric"),
 	  definition=function(object, method, alpha, ...){
-	      pScreen=object@pScreen
-	      pConfirmation=object@pConfirmation
+	      pScreen=getPScreen(object)
+	      pConfirmation=getPConfirmation(object)
 	      pScreenAdjusted=object@pScreenAdjusted
 	      stageAdjPValues <- .stageWiseTest(pScreen=pScreen, pConfirmation=pConfirmation, alpha=alpha, method=method,  pScreenAdjusted=pScreenAdjusted, ...)
 	      object@adjustedP <- stageAdjPValues[["pAdjStage"]]
@@ -263,8 +262,8 @@ setMethod("stageWiseAdjustment",signature=signature(object="stageR", method="cha
 	  })
 setMethod("stageWiseAdjustment",signature=signature(object="stageRTx", method="character", alpha="numeric"),
           definition=function(object, method, alpha, ...){
-            pScreen=object@pScreen
-            pConfirmation=object@pConfirmation
+            pScreen=getPScreen(object)
+            pConfirmation=getPConfirmation(object)
             pScreenAdjusted=object@pScreenAdjusted
             tx2gene=object@tx2gene
             stageAdjPValues <- .stageWiseTest(pScreen=pScreen, pConfirmation=pConfirmation, alpha=alpha, method=method,  pScreenAdjusted=pScreenAdjusted, tx2gene=tx2gene, ...)
@@ -318,6 +317,8 @@ setMethod("getPConfirmation",signature=signature(object="stageRTx"),
 #' This functions returns the stage-wise adjusted p-values for an object from the  \code{\link{stageRClass}} class. Note, that the p-values should have been adjusted with the \code{\link{stageWiseAdjustment}} function prior to calling this function.
 #'
 #' @param object an object of the \code{\link{stageRClass}} class.
+#' @param onlySignificantGenes logical. If FALSE (default), all genes are returned. If TRUE, only the genes significant for the screening hypothesis are returned.
+#' @param order logical. If TRUE (default), the returned matrix of adjusted p-values are ordered based on the screening hypothesis adjusted p-value.
 #' @details
 #' The function returns FDR adjusted p-values for the screening hypothesis and stage-wise adjusted p-values for the confirmation hypothesis p-values. For features that were not significant in the screening hypothesis, the confirmation stage adjusted p-values are set to 1.
 #' @examples
@@ -435,11 +436,13 @@ setMethod("getResults",signature=signature(object="stageR"),
 setMethod("getSignificantGenes",signature=signature(object="stageRTx"),
           definition=function(object){
             if(!object@adjusted) stop("adjust p-values first using stageWiseAdjustment")
-            IDs=rownames(object@adjustedP)
-            geneIDs=unlist(lapply(strsplit(IDs,split=".",fixed=TRUE),function(x) x[1]))
-            significantGeneIDs=object@adjustedP[,1]<=object@alpha
+            if(class(object)!="stageRTx") stop("this function only works on an object of class stageRTx")
+            adjustedPValues=getAdjustedPValues(object, onlySignificantGenes=FALSE, order=FALSE)
+            geneIDs=adjustedPValues$geneID
+            pScreenAdjusted=adjustedPValues[,"gene"]
+            significantGeneIDs=which(pScreenAdjusted<=object@alpha)
             significantGeneNames=geneIDs[significantGeneIDs]
-            geneAdjustedPValues=object@adjustedP[significantGeneIDs,1]
+            geneAdjustedPValues=adjustedPValues[significantGeneIDs,"gene"]
             dups=duplicated(significantGeneNames)
             significantGenes=matrix(geneAdjustedPValues[!dups],ncol=1,dimnames=list(significantGeneNames[!dups],"FDR adjusted p-value"))
             return(significantGenes)

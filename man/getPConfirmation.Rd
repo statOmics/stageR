@@ -14,7 +14,11 @@
 Return unadjusted confirmation hypothesis p-values from a \code{\link{stageRClass}} object.
 }
 \examples{
-stageRObj <- stageR(pScreen=seq(1e-4,.5,length.out=1000), pConfirmation=matrix(runif(3000),nrow=1000,ncol=3))
+pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
+names(pScreen)=paste0("gene",1:300)
+pConfirmation=matrix(runif(900),nrow=300,ncol=3)
+dimnames(pConfirmation)=list(paste0("gene",1:300),c("H1","H2","H3"))
+stageRObj <- stageR(pScreen=pScreen, pConfirmation=pConfirmation)
 getPConfirmation(stageRObj)
 }
 

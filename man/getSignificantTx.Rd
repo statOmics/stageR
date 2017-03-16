@@ -25,8 +25,11 @@ pScreen=c(seq(1e-10,1e-2,length.out=nGenes-100),seq(1e-2,.2,length.out=50),seq(5
 names(pScreen)=names(table(genes)) #discards genes that are not simulated
 pConfirmation=matrix(runif(1000),nrow=1000,ncol=1)
 rownames(pConfirmation)=transcripts
-stageRObj <- stageR(pScreen=pScreen, pConfirmation=pConfirmation ,pScreenAdjusted=TRUE)
-adjustedP <- stageWiseAdjustment(stageRObj, method="dte", alpha=0.05, tx2gene=tx2gene)
-head(getSignificantTx(adjustedP))
+stageRObj <- stageRTx(pScreen=pScreen, pConfirmation=pConfirmation ,pScreenAdjusted=TRUE, tx2gene=tx2gene)
+stageRObj <- stageWiseAdjustment(stageRObj, method="dte", alpha=0.05)
+head(getSignificantTx(stageRObj))
+}
+\references{
+Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. Submitted.
 }
 

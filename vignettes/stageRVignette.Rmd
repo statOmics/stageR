@@ -52,9 +52,9 @@ We use a contrast for the differential expression at the first and second timepo
 Therefore we create a design matrix consisting of two timepoints, two treatments and two biological replicates in every treatment $\times$ time combination. Note there has been a typo in the phenoData, so we will correct this first.
 
 ```{r}
-eset@phenoData@data$Time #typo. Will do it ourself
+pData(eset)$Time #typo. Will do it ourself
 time = factor(rep(c("mo2","w2"),each=4),levels=c("w2","mo2"))
-eset@phenoData@data$protocol
+pData(eset)$protocol
 treat = factor(c("control","control","SNL","SNL","control","control","SNL","SNL"),levels=c("control","SNL"))
 design = model.matrix(~time*treat)
 rownames(design) = paste0(time,treat,rep(1:2,4))

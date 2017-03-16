@@ -18,8 +18,14 @@ The FDR adjusted screening hypothesis p-values are compared to the alpha level s
 }
 \examples{
 pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
-stageRObj <- stageR(pScreen=pScreen, pConfirmation=matrix(runif(3000),nrow=1000,ncol=3))
-adjustedP <- stageWiseAdjustment(stageRObj, method="holm", alpha=0.05)
-head(getResults(adjustedP))
+names(pScreen)=paste0("gene",1:300)
+pConfirmation=matrix(runif(900),nrow=300,ncol=3)
+dimnames(pConfirmation)=list(paste0("gene",1:300),c("H1","H2","H3"))
+stageRObj <- stageR(pScreen=pScreen, pConfirmation=pConfirmation)
+stageRObj <- stageWiseAdjustment(stageRObj, method="holm", alpha=0.05)
+head(getResults(stageRObj))
+}
+\references{
+Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
 }
 
