@@ -2,9 +2,9 @@
 title: "stageR: stage-wise analysis of high-throughput gene expression data in R"
 author: "Koen Van den Berge"
 date: "`r Sys.Date()`"
-bibliography: ../stageR.bib
-output: rmarkdown::html_vignette:
-          toc: true
+bibliography: stageR.bib
+output: 
+  BiocStyle::html_document
 vignette: >
   %\VignetteIndexEntry{stageR}
   %\VignetteEngine{knitr::rmarkdown}
