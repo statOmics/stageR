@@ -482,5 +482,3 @@ setMethod("getSignificantTx",signature=signature(object="stageRTx"),
             return(significantTranscripts)
           })
 
-
-

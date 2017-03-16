@@ -2,7 +2,7 @@
 title: "stageR: stage-wise analysis of high-throughput gene expression data in R"
 author: "Koen Van den Berge"
 date: "`r Sys.Date()`"
-bibliography: /Users/koenvandenberge/Documents/Mendeley/library.bib
+bibliography: ../stageR.bib
 output: rmarkdown::html_vignette:
           toc: true
 vignette: >
@@ -16,7 +16,7 @@ The stage-wise analysis has been adopted from [@Heller2009] and consists of a sc
 In the confirmation stage, only genes passing the screening stage are considered for analysis. For those genes, every hypothesis of interest is assessed separately and multiple testing correction is performed across hypotheses within a gene to control the FWER on the BH-adjusted significance level of the screening stage.
 `stageR` provides an automated way to perform stage-wise testing, given p-values for the screening and confirmation stages. A number of FWER control procedures that take into account the logical relations among the hypotheses are implemented. Since the logical relations may be specific to the experiment, the user can also specify an adjustment deemed appropriate.
 
-The vignette analyses two datasets. The Hammer dataset [@Hammer2010] is a differential gene expression analysis for an experiment with a complex design. This type of analyses are supported by the `stageR` class. The Renn dataset [@Ren2012] analyses differential transcript usage (DTU) in tumoral versus normal tissue in Chinese patients. Transcript-level analyses are supported by the `stageRTx` class. 
+The vignette analyses two datasets. The Hammer dataset [@Hammer2010] is a differential gene expression analysis for an experiment with a complex design. This type of analyses are supported by the `stageR` class. The Ren dataset [@Ren2012] analyses differential transcript usage (DTU) in tumoral versus normal tissue in Chinese patients. Transcript-level analyses are supported by the `stageRTx` class. 
 
 # Installing and loading the package
 
