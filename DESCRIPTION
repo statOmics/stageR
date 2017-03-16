@@ -18,5 +18,6 @@ Collate:
 RoxygenNote: 5.0.1
 Suggests:
     knitr,
-    rmarkdown
+    rmarkdown,
 VignetteBuilder: knitr
+Imports: BiocStyle
