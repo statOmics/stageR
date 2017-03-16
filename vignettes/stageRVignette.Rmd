@@ -30,6 +30,18 @@ library(stageR)
 
 # Differential gene expression: Hammer dataset
 
+```{r,echo=FALSE}
+library(utils)
+if(!"BiocInstaller" %in% installed.packages()[,1]){
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("BiocInstaller")
+}
+if(!"edgeR" %in% installed.packages()[,1]) BiocInstaller::biocLite("edgeR")
+if(!"Biobase" %in% installed.packages()[,1]) BiocInstaller::biocLite("Biobase")
+if(!"limma" %in% installed.packages()[,1]) BiocInstaller::biocLite("limma")
+if(!"DEXSeq" %in% installed.packages()[,1]) BiocInstaller::biocLite("DEXSeq")
+```
+
 ```{r,echo=TRUE,warning=FALSE}
 suppressPackageStartupMessages({library(edgeR) ; library(Biobase) ; library(limma) ; library(utils) ; library(DEXSeq)})
 ```
