@@ -1,13 +1,30 @@
 #' @include stageRClasses.R allGenerics.R
 
-.stageWiseTest <- function(pScreen, pConfirmation, alpha, method=c("none","holm","dte","dtu","user"), adjustment=NULL, tx2gene=NULL, pScreenAdjusted){
+.stageWiseTest <- function(pScreen, pConfirmation, alpha, method=c("none","holm","dte","dtu","user"), adjustment=NULL, tx2gene=NULL, pScreenAdjusted, allowNA=FALSE){
+
+
+  if(allowNA){
+  if(any(is.na(pScreen))){
+    naFeatures=which(is.na(pScreen))
+    message(paste0("Removing ",length(naFeatures)," features with NA screening hypothesis p-values. \n"))
+    pScreen=pScreen[-naFeatures]
+    pConfirmation=pConfirmation[-naFeatures,]
+  }
+  }
+
+  ## check for NA values
+    if(!allowNA){
+      if(any(is.na(pScreen)) | any(is.na(pConfirmation))) stop("NA p-values found in either the screening or confirmation tests. If you want to allow for NA p-values, set allowNA=TRUE.")
+    }
+
+
     method <- match.arg(method,c("none","holm","dte","dtu","user"))
 
         if(method=="none"){
 
           if(!pScreenAdjusted) padjScreen <- p.adjust(pScreen,"BH") else padjScreen <- pScreen
           significanceOrdering <- order(padjScreen)
-          genesStageI <- padjScreen<alpha
+          genesStageI <- padjScreen<=alpha
 	        pAdjConfirmation <- matrix(nrow=nrow(pConfirmation),ncol=ncol(pConfirmation), dimnames=list(c(rownames(pConfirmation)),colnames(pConfirmation)))
 	        pAdjConfirmation[genesStageI,] <- pConfirmation[genesStageI,]
 	        padjScreenReturn=padjScreen
@@ -16,7 +33,7 @@
 
       if(!pScreenAdjusted) padjScreen <- p.adjust(pScreen,"BH") else padjScreen <- pScreen
       significanceOrdering <- order(padjScreen)
-      genesStageI <- padjScreen<alpha
+      genesStageI <- padjScreen<=alpha
       padjScreenReturn=padjScreen
 	## only do correction for genes that passed the screening stage
       pAdjConfirmation <- matrix(nrow=nrow(pConfirmation),ncol=ncol(pConfirmation), dimnames=list(c(rownames(pConfirmation)),colnames(pConfirmation)))
@@ -25,9 +42,14 @@
       row <- pConfirmation[which(genesStageI)[i],]
         # Holm correction conditional on passing the screening stage.
         o <- order(row)
-        n <- length(row)
+        if(all(!is.na(row))){ #if no NA's, standard Holm with screening stage correction
+          n <- length(row)
+        } else { #if NA's present, only correct for non NA p-values
+          n <- length(row[!is.na(row)])
+        }
         # Holm adjustment: passing screening stage implies 1 false hypothesis
         adjustment <- c(n-1,(n-1):1)
+        if(length(adjustment)!=length(row)) adjustment = c(adjustment,rep(1,length(row)-length(adjustment)))
         rowAdjusted <- row[o]*adjustment
         rowAdjusted <- pmin(rowAdjusted,1)
         rowAdjusted <- cummax(rowAdjusted)
@@ -40,7 +62,7 @@
       if(length(adjustment)!=ncol(pConfirmation)) stop("the length of the adjustment vector is not equal to the number of confirmation hypotheses as defined by the number of columns in pConfirmation.")
       if(!pScreenAdjusted) padjScreen <- p.adjust(pScreen,"BH") else padjScreen <- pScreen
       significanceOrdering <- order(padjScreen)
-      genesStageI <- padjScreen<alpha
+      genesStageI <- padjScreen<=alpha
       padjScreenReturn=padjScreen
       pAdjConfirmation <- matrix(nrow=nrow(pConfirmation),ncol=ncol(pConfirmation), dimnames=list(c(rownames(pConfirmation)),colnames(pConfirmation)))
       pAdjConfirmation[genesStageI,] <- t(sapply(1:length(which(genesStageI)), function(i){
