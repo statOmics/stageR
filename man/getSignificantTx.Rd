@@ -10,6 +10,9 @@
 \arguments{
 \item{object}{an object of the \code{\link{stageRClass}} class.}
 }
+\value{
+A matrix of significant transcripts with their corresponding stage-wise adjusted p-value (i.e. FDR and FWER correction).
+}
 \description{
 This functions returns a matrix with significant transctripts according to a stage-wise analysis.
 }
@@ -32,4 +35,3 @@ head(getSignificantTx(stageRObj))
 \references{
 Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. Submitted.
 }
-

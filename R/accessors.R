@@ -2,7 +2,6 @@
 
 .stageWiseTest <- function(pScreen, pConfirmation, alpha, method=c("none","holm","dte","dtu","user"), adjustment=NULL, tx2gene=NULL, pScreenAdjusted, allowNA=FALSE){
 
-
   if(allowNA){
   if(any(is.na(pScreen))){
     naFeatures=which(is.na(pScreen))
@@ -162,7 +161,7 @@
 
 .getAdjustedP <- function(object, onlySignificantGenes=FALSE, order=TRUE){
   ## this function is used in getAdjustedPValues to return the adjusted p-values for a stageR class.
-  warning(paste0("The returned adjusted p-values are based on a stage-wise testing approach and are only valid for the provided target OFDR level of ",getAlpha(object)*100,"%. If a different target OFDR level is of interest, the entire adjustment should be re-run."), call.=FALSE)
+  warning(paste0("The returned adjusted p-values are based on a stage-wise testing approach and are only valid for the provided target OFDR level of ",getAlpha(object)*100,"%. If a different target OFDR level is of interest, the entire adjustment should be re-run. \n"), call.=FALSE)
 	if(onlySignificantGenes){ #significant genes
 	    genesStageI <- object@adjustedP[,1]<=getAlpha(object)
 	    if(sum(genesStageI)==0){
@@ -189,7 +188,7 @@
 
 .getAdjustedPTx <- function(object, onlySignificantGenes=FALSE, order=TRUE){
   ## this function is used in getAdjustedPValues to return the adjusted p-values for a stageRTx class.
-  warning(paste0("The returned adjusted p-values are based on a stage-wise testing approach and are only valid for the provided target OFDR level of ",getAlpha(object)*100,"%. If a different target OFDR level is of interest, the entire adjustment should be re-run."), call.=FALSE)
+  warning(paste0("The returned adjusted p-values are based on a stage-wise testing approach and are only valid for the provided target OFDR level of ",getAlpha(object)*100,"%. If a different target OFDR level is of interest, the entire adjustment should be re-run. \n"), call.=FALSE)
   tx2gene=getTx2gene(object)
   pConfirmation=getPConfirmation(object)
   geneForEachTx <- tx2gene[match(rownames(pConfirmation),tx2gene[,1]),2]
@@ -252,6 +251,8 @@
 #' @param alpha the OFDR on which to control the two-stage analysis.
 #' @param adjustment a user-defined adjustment of the confirmation stage p-values. Only applicable when \code{method} is \code{"none"} and ignored otherwise.
 #' @param tx2gene Only applicable when  \code{method} is \code{"dte"} or \code{"dtu"}.  A \code{\link[base]{data.frame}} with transcript IDs in the first columns and gene IDs in the second column. The rownames from \code{pConfirmation} must be contained in the transcript IDs from \code{tx2gene}, and the names from \code{pScreen} must be contained in the gene IDs.
+#' @return
+#' A stageR/stageRTx object with stage-wise adjusted p-values.
 #' @references
 #' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
 #'
@@ -303,6 +304,8 @@ setMethod("stageWiseAdjustment",signature=signature(object="stageRTx", method="c
 #' Return screening hypothesis p-values from a \code{\link{stageRClass}} object.
 #'
 #' @param object an object of the \code{\link{stageRClass}} class.
+#' @return
+#' A vector of screening stage (aggregated) p-values.
 #' @examples
 #' pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
 #' names(pScreen)=paste0("gene",1:300)
@@ -321,6 +324,8 @@ setMethod("getPScreen",signature=signature(object="stageRTx"),
 #' Return unadjusted confirmation hypothesis p-values from a \code{\link{stageRClass}} object.
 #'
 #' @param object an object of the \code{\link{stageRClass}} class.
+#' @return
+#' A matrix of the unadjusted p-values to be used in the confirmation stage.
 #' @examples
 #' pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
 #' names(pScreen)=paste0("gene",1:300)
@@ -344,6 +349,9 @@ setMethod("getPConfirmation",signature=signature(object="stageRTx"),
 #' @param object an object of the \code{\link{stageRClass}} class.
 #' @param onlySignificantGenes logical. If FALSE (default), all genes are returned. If TRUE, only the genes significant for the screening hypothesis are returned.
 #' @param order logical. If TRUE (default), the returned matrix of adjusted p-values are ordered based on the screening hypothesis adjusted p-value.
+#' @return
+#' For complex DGE experiments (stageR object), a matrix of adjusted p-values where every row corresponds to a gene, and every column corresponds to a contrast. The first column will be the BH FDR adjusted p-value from the screening step.
+#' For transcript-level experiments (stageRTx object), a matrix of adjusted p-values where every row corresponds to a transcript.
 #' @details
 #' The function returns FDR adjusted p-values for the screening hypothesis and stage-wise adjusted p-values for the confirmation hypothesis p-values. For features that were not significant in the screening hypothesis, the confirmation stage adjusted p-values are set to \code{NA}.
 #' @examples
@@ -377,7 +385,9 @@ setMethod("getAdjustedPValues",signature=signature(object="stageRTx"),
 #'
 #' @param object an object of the \code{\link{stageRClass}} class.
 #' @details
-#' The adjusted significance level is calculated as the fraction of significant features in the screening stage times the alpha level.
+#' The adjusted significance level is calculated as the fraction of significant features in the screening stage multiplied the alpha level.
+#' @return
+#' Scalar, the adjusted significance level from the screening stage.
 #' @examples
 #' pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
 #' names(pScreen)=paste0("gene",1:300)
@@ -407,11 +417,13 @@ setMethod("adjustedAlphaLevel",signature=signature(object="stageRTx"),
 
 #' Get significance results according to a stage-wise analysis.
 #'
-#' This functions returns a matrix that indicates whether a specific feature is significant for a specific hypothesis of interest according to a stage-wise analysis.
+#' This functions returns a matrix that indicates whether a specific feature is significant for a specific hypothesis of interest according to a stage-wise analysis. The function is not applicable to transcript-level analysis.
 #'
 #' @param object an object of the \code{\link{stageRClass}} class.
 #' @details
 #' The FDR adjusted screening hypothesis p-values are compared to the alpha level specified. The FWER adjusted confirmation stage p-values are compared to the adjusted significance level from the screening stage.
+#' @return
+#' A logical matrix with rows corresponding to genes and columns corresponding to contrasts, where the first column represents the screening stage on the aggregated p-values. A 0 represents a non-significant test, a 1 represents a significant test according to the stage-wise analysis.
 #' @examples
 #' pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
 #' names(pScreen)=paste0("gene",1:300)
@@ -437,6 +449,8 @@ setMethod("getResults",signature=signature(object="stageR"),
 #' This functions returns a matrix with significant genes by aggregated testing of its respective transcripts.
 #'
 #' @param object an object of the \code{\link{stageRClass}} class.
+#' @return
+#' A matrix with significant genes and their corresponding FDR-adjusted screening stage (aggregated) p-value.
 #' @examples
 #' #make identifiers linking transcripts to genes
 #' set.seed(1)
@@ -479,6 +493,8 @@ setMethod("getSignificantGenes",signature=signature(object="stageRTx"),
 #' This functions returns a matrix with significant transctripts according to a stage-wise analysis.
 #'
 #' @param object an object of the \code{\link{stageRClass}} class.
+#' @return
+#' A matrix of significant transcripts with their corresponding stage-wise adjusted p-value (i.e. FDR and FWER correction).
 #' @references
 #' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. Submitted.
 #' @examples
@@ -516,6 +532,8 @@ setMethod("getSignificantTx",signature=signature(object="stageRTx"),
 #' This functions returns the significance level on which the stage-wise adjustment is based.
 #'
 #' @param object an object of the \code{\link{stageRClass}} or \code{\link{stageRTxClass}} class.
+#' @return
+#' Returns a calar vector with the OFDR alpha level that was specified by the user.
 #' @examples
 #' pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
 #' names(pScreen)=paste0("gene",1:300)
@@ -546,6 +564,8 @@ setMethod("getAlpha",signature=signature(object="stageRTx"),
 #' This functions returns a data frame that links the genes with the transcripts being analysed.
 #'
 #' @param object an object of the \code{\link{stageRTxClass}} class.
+#' @return
+#' A matrix linking gene to transcript identifiers.
 #' @examples
 #' #make identifiers linking transcripts to genes
 #' set.seed(1)
@@ -576,6 +596,8 @@ setMethod("getTx2gene",signature=signature(object="stageRTx"),
 #' This functions returns a logical stating whether the screening hypothesis p-values are already adjusted for multiple testing according to the BH FDR criterion.
 #'
 #' @param object an object of the \code{\link{stageRClass}} or \code{\link{stageRTxClass}} class.
+#' @return
+#' A logical stating whether the screening hypothesis p-values are already adjusted for multiple testing according to the BH FDR criterion.
 #' @examples
 #' pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
 #' names(pScreen)=paste0("gene",1:300)
@@ -603,6 +625,8 @@ setMethod("isPScreenAdjusted",signature=signature(object="stageRTx"),
 #' This functions returns a logical stating whether the p-values have already been adjusted according to the stage-wise method.
 #'
 #' @param object an object of the \code{\link{stageRClass}} or \code{\link{stageRTxClass}} class.
+#' @return
+#' A logical stating whether the p-values have already been adjusted according to the stage-wise method
 #' @examples
 #' pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
 #' names(pScreen)=paste0("gene",1:300)
@@ -632,6 +656,8 @@ setMethod("isAdjusted",signature=signature(object="stageRTx"),
 #' This functions retrieves the method used for FWER multiple testing correction in the confirmation stage of a stage-wise analysis.
 #'
 #' @param object an object of the \code{\link{stageRClass}} or \code{\link{stageRTxClass}} class.
+#' @return
+#' Returns a character vector of length 1 specifying the FWER correction method that is used in the confirmation stage of the stage-wise analysis.
 #' @examples
 #' pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
 #' names(pScreen)=paste0("gene",1:300)

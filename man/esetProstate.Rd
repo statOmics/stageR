@@ -18,4 +18,3 @@ A dataset containing 14 matched samples of tumoral prostate cancer and normal ti
 Ren, Shancheng, Zhiyu Peng, Jian-Hua Mao, Yongwei Yu, Changjun Yin, Xin Gao, Zilian Cui, et al. 2012. “RNA-seq analysis of prostate cancer in the Chinese population identifies recurrent gene fusions, cancer-associated long noncoding RNAs and aberrant alternative splicings.” Cell Research 22 (5): 806–21. doi:10.1038/cr.2012.30.
 }
 \keyword{datasets}
-

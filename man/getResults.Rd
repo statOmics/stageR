@@ -10,8 +10,11 @@
 \arguments{
 \item{object}{an object of the \code{\link{stageRClass}} class.}
 }
+\value{
+A logical matrix with rows corresponding to genes and columns corresponding to contrasts, where the first column represents the screening stage on the aggregated p-values. A 0 represents a non-significant test, a 1 represents a significant test according to the stage-wise analysis.
+}
 \description{
-This functions returns a matrix that indicates whether a specific feature is significant for a specific hypothesis of interest according to a stage-wise analysis.
+This functions returns a matrix that indicates whether a specific feature is significant for a specific hypothesis of interest according to a stage-wise analysis. The function is not applicable to transcript-level analysis.
 }
 \details{
 The FDR adjusted screening hypothesis p-values are compared to the alpha level specified. The FWER adjusted confirmation stage p-values are compared to the adjusted significance level from the screening stage.
@@ -28,4 +31,3 @@ head(getResults(stageRObj))
 \references{
 Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
 }
-

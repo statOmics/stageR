@@ -10,6 +10,9 @@
 \arguments{
 \item{object}{an object of the \code{\link{stageRClass}} class.}
 }
+\value{
+A matrix with significant genes and their corresponding FDR-adjusted screening stage (aggregated) p-value.
+}
 \description{
 This functions returns a matrix with significant genes by aggregated testing of its respective transcripts.
 }
@@ -32,4 +35,3 @@ head(getSignificantGenes(stageRObj))
 \references{
 Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
 }
-

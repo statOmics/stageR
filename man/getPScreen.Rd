@@ -10,6 +10,9 @@
 \arguments{
 \item{object}{an object of the \code{\link{stageRClass}} class.}
 }
+\value{
+A vector of screening stage (aggregated) p-values.
+}
 \description{
 Return screening hypothesis p-values from a \code{\link{stageRClass}} object.
 }
@@ -21,4 +24,3 @@ dimnames(pConfirmation)=list(paste0("gene",1:300),c("H1","H2","H3"))
 stageRObj <- stageR(pScreen=pScreen, pConfirmation=pConfirmation)
 getPScreen(stageRObj)
 }
-

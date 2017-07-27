@@ -10,6 +10,9 @@
 \arguments{
 \item{object}{an object of the \code{\link{stageRClass}} or \code{\link{stageRTxClass}} class.}
 }
+\value{
+Returns a character vector of length 1 specifying the FWER correction method that is used in the confirmation stage of the stage-wise analysis.
+}
 \description{
 This functions retrieves the method used for FWER multiple testing correction in the confirmation stage of a stage-wise analysis.
 }
@@ -25,4 +28,3 @@ getMethod(stageRObj)
 \references{
 Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
 }
-

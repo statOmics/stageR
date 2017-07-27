@@ -10,6 +10,9 @@
 \arguments{
 \item{object}{an object of the \code{\link{stageRTxClass}} class.}
 }
+\value{
+A matrix linking gene to transcript identifiers.
+}
 \description{
 This functions returns a data frame that links the genes with the transcripts being analysed.
 }
@@ -31,4 +34,3 @@ getTx2gene(stageRObj)
 \references{
 Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
 }
-

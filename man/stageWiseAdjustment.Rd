@@ -19,6 +19,9 @@
 
 \item{tx2gene}{Only applicable when  \code{method} is \code{"dte"} or \code{"dtu"}.  A \code{\link[base]{data.frame}} with transcript IDs in the first columns and gene IDs in the second column. The rownames from \code{pConfirmation} must be contained in the transcript IDs from \code{tx2gene}, and the names from \code{pScreen} must be contained in the gene IDs.}
 }
+\value{
+A stageR/stageRTx object with stage-wise adjusted p-values.
+}
 \description{
 This function will adjust p-values according to a hierarchical two-stage testing paradigm.
 }
@@ -40,4 +43,3 @@ S. Holm, “A Simple Sequentially Rejective Multiple Test Procedure,” Scandina
 
 J. P. Shaffer, “Modified Sequentially Rejective Multiple Test Procedures,” Journal of the American Statistical Asso- ciation, vol. 81, p. 826, 1986.
 }
-

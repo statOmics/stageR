@@ -10,11 +10,14 @@
 \arguments{
 \item{object}{an object of the \code{\link{stageRClass}} class.}
 }
+\value{
+Scalar, the adjusted significance level from the screening stage.
+}
 \description{
 This functions returns the adjusted significance level from the screening stage that should be used to compare confirmation stage FWER adjusted p-values to.
 }
 \details{
-The adjusted significance level is calculated as the fraction of significant features in the screening stage times the alpha level.
+The adjusted significance level is calculated as the fraction of significant features in the screening stage multiplied the alpha level.
 }
 \examples{
 pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
@@ -30,4 +33,3 @@ Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powe
 
 R. Heller, E. Manduchi, G. R. Grant, and W. J. Ewens, “A flexible two-stage procedure for identifying gene sets that are differentially expressed.” Bioinformatics (Oxford, England), vol. 25, pp. 1019–25, 2009.
 }
-

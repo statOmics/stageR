@@ -10,6 +10,9 @@
 \arguments{
 \item{object}{an object of the \code{\link{stageRClass}} or \code{\link{stageRTxClass}} class.}
 }
+\value{
+A logical stating whether the p-values have already been adjusted according to the stage-wise method
+}
 \description{
 This functions returns a logical stating whether the p-values have already been adjusted according to the stage-wise method.
 }
@@ -26,4 +29,3 @@ isAdjusted(stageRObj)
 \references{
 Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
 }
-

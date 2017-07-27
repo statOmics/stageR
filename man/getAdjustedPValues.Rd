@@ -14,6 +14,10 @@
 
 \item{order}{logical. If TRUE (default), the returned matrix of adjusted p-values are ordered based on the screening hypothesis adjusted p-value.}
 }
+\value{
+For complex DGE experiments (stageR object), a matrix of adjusted p-values where every row corresponds to a gene, and every column corresponds to a contrast. The first column will be the BH FDR adjusted p-value from the screening step.
+For transcript-level experiments (stageRTx object), a matrix of adjusted p-values where every row corresponds to a transcript.
+}
 \description{
 This functions returns the stage-wise adjusted p-values for an object from the  \code{\link{stageRClass}} class. Note, that the p-values should have been adjusted with the \code{\link{stageWiseAdjustment}} function prior to calling this function.
 }
@@ -32,4 +36,3 @@ head(getAdjustedPValues(stageRObj))
 \references{
 Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
 }
-

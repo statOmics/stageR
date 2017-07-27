@@ -10,6 +10,9 @@
 \arguments{
 \item{object}{an object of the \code{\link{stageRClass}} or \code{\link{stageRTxClass}} class.}
 }
+\value{
+Returns a calar vector with the OFDR alpha level that was specified by the user.
+}
 \description{
 This functions returns the significance level on which the stage-wise adjustment is based.
 }
@@ -25,4 +28,3 @@ getAlpha(stageRObj)
 \references{
 Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
 }
-

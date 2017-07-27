@@ -10,6 +10,9 @@
 \arguments{
 \item{object}{an object of the \code{\link{stageRClass}} or \code{\link{stageRTxClass}} class.}
 }
+\value{
+A logical stating whether the screening hypothesis p-values are already adjusted for multiple testing according to the BH FDR criterion.
+}
 \description{
 This functions returns a logical stating whether the screening hypothesis p-values are already adjusted for multiple testing according to the BH FDR criterion.
 }
@@ -24,4 +27,3 @@ isPScreenAdjusted(stageRObj)
 \references{
 Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
 }
-
