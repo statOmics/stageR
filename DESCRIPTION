@@ -7,6 +7,7 @@ Maintainer: Koen Van den Berge <koen.vandenberge@ugent.be>
 Description: The stageR package allows automated stage-wise analysis of high-throughput gene expression data. The method is currently published as a preprint at http://biorxiv.org/content/early/2017/02/16/109082
 License: GNU General Public License version 3
 LazyData: TRUE
+biocViews: software, differential expression, differential transcript usage, high-throughput sequencing, stage-wise testing
 Collate:
     'stageRClasses.R'
     'allGenerics.R'
