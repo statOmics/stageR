@@ -8,7 +8,7 @@ Description: The stageR package allows automated stage-wise analysis of high-thr
 License: GNU General Public License version 3
 LazyData: TRUE
 biocViews: Software, StatisticalMethod
-Depends: R (>= 3.1.0)
+Depends: R (>= 3.4)
 Collate: 
     'stageRClasses.R'
     'allGenerics.R'
