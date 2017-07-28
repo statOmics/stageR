@@ -1,25 +1,27 @@
 Package: stageR
 Type: Package
 Title: stageR: stage-wise analysis of high throughput gene expression data in R
-Version: 0.1.0
+Version: 0.99.0
 Author: Koen Van den Berge
 Maintainer: Koen Van den Berge <koen.vdberge@gmail.com>
 Description: The stageR package allows automated stage-wise analysis of high-throughput gene expression data. The method is currently published as a preprint at http://biorxiv.org/content/early/2017/02/16/109082
 License: GNU General Public License version 3
 LazyData: TRUE
 biocViews: Software, StatisticalMethod
-Collate:
+Depends: R (>= 3.1.0)
+Collate: 
     'stageRClasses.R'
     'allGenerics.R'
+    'constructors.R'
     'accessors.R'
     'constructDTUDataset.R'
-    'constructors.R'
     'data.R'
     'methods.R'
 RoxygenNote: 6.0.1
 Suggests:
     knitr,
     rmarkdown,
-    BiocStyle
+    BiocStyle,
+    methods
 VignetteBuilder: knitr
 Imports:

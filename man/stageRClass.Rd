@@ -4,6 +4,7 @@
 \name{stageRClass}
 \alias{stageRClass}
 \alias{stageRClass}
+\alias{stageRTxClass}
 \title{The stageR class}
 \description{
 This class is used for adjusting p-values with stage-wise testing for high-throughput studies.
@@ -15,7 +16,7 @@ This class is used for adjusting p-values with stage-wise testing for high-throu
 
 \item{\code{pConfirmation}}{A matrix of p-values for the confirmation hypotheses.}
 
-\item{\code{adjustedP}}{A matrix of adjusted p-values. This slot should be accessed through \code{\link{getAdjustedP}}. Alternatively, significance results can be accessed through \code{\link{getResults}}.}
+\item{\code{adjustedP}}{A matrix of adjusted p-values. This slot should be accessed through \code{\link{getAdjustedPValues,stageR,logical,logical-method}}. Alternatively, significance results can be accessed through \code{\link{getResults,stageR-method}}.}
 
 \item{\code{method}}{Character string indicating the method used for FWER correction in the confirmation stage of the stage-wise analysis. Can be any of \code{"none"}, \code{"holm"}, \code{"dte"}, \code{"dtu"}, \code{"user"}. \code{"none"} will not adjust the p-values in the confirmation stage. \code{"holm"} is an adapted Holm procedure for a stage-wise analysis, where the method takes into account the fact that genes in the confirmation stage have already passed the screening stage, hence the procedure will be more powerful for the most significant p-value as compared to the standard Holm procedure. \code{"dte"} is the adjusted Holm-Shaffer procedure for differential transcript expression analysis. \code{"dtu"} is the adjusted Holm-Shaffer procedure for differential transcript usage. \code{"user"} indicates a user-defined adjustment that should be specified with the \code{adjustment} argument.}
 
@@ -29,8 +30,8 @@ This class is used for adjusting p-values with stage-wise testing for high-throu
 }}
 
 \references{
-Van den Berge K., Soneson C., Robinson M.D., Clement L. "A general and powerful stage-wise testing procedure for differential expression and differential transcript usage." Submitted, 2017.
-R. Heller, E. Manduchi, G. R. Grant, and W. J. Ewens, “A flexible two-stage procedure for identifying gene sets that are differentially expressed.” Bioinformatics (Oxford, England), vol. 25, pp. 1019–25, 2009.
-S. Holm, “A Simple Sequentially Rejective Multiple Test Procedure,” Scandinavian Journal of Statistics, vol. 6, no. 2, pp. 65–70, 1979.
-J. P. Shaffer, “Modified Sequentially Rejective Multiple Test Procedures,” Journal of the American Statistical Asso- ciation, vol. 81, p. 826, 1986.
+Van den Berge K., Soneson C., Robinson M.D., Clement L. "A general and powerful stage-wise testing procedure for differential expression and differential transcript usage." \url{http://biorxiv.org/content/early/2017/02/16/109082}
+R. Heller, E. Manduchi, G. R. Grant, and W. J. Ewens, "A flexible two-stage procedure for identifying gene sets that are differentially expressed." Bioinformatics (Oxford, England), vol. 25, pp. 1019-25, 2009.
+S. Holm, "A Simple Sequentially Rejective Multiple Test Procedure," Scandinavian Journal of Statistics, vol. 6, no. 2, pp. 65-70, 1979.
+J. P. Shaffer, "Modified Sequentially Rejective Multiple Test Procedures," Journal of the American Statistical Association, vol. 81, p. 826, 1986.
 }

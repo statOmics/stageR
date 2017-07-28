@@ -1,4 +1,4 @@
-#' @include stageRClasses.R allGenerics.R
+#' @include stageRClasses.R allGenerics.R constructors.R
 
 .stageWiseTest <- function(pScreen, pConfirmation, alpha, method=c("none","holm","dte","dtu","user"), adjustment=NULL, tx2gene=NULL, pScreenAdjusted, allowNA=FALSE){
 
@@ -249,19 +249,17 @@
 #' @param object an object of the \code{\link{stageRClass}} class.
 #' @param method Character string indicating the method used for FWER correction in the confirmation stage of the stage-wise analysis. Can be any of \code{"none"}, \code{"holm"}, \code{"dte"}, \code{"dtu"}, \code{"user"}. \code{"none"} will not adjust the p-values in the confirmation stage. \code{"holm"} is an adapted Holm procedure for a stage-wise analysis, where the method takes into account the fact that genes in the confirmation stage have already passed the screening stage, hence the procedure will be more powerful for the most significant p-value as compared to the standard Holm procedure. \code{"dte"} is the adjusted Holm-Shaffer procedure for differential transcript expression analysis. \code{"dtu"} is the adjusted Holm-Shaffer procedure for differential transcript usage. \code{"user"} indicates a user-defined adjustment that should be specified with the \code{adjustment} argument.
 #' @param alpha the OFDR on which to control the two-stage analysis.
-#' @param adjustment a user-defined adjustment of the confirmation stage p-values. Only applicable when \code{method} is \code{"none"} and ignored otherwise.
 #' @param tx2gene Only applicable when  \code{method} is \code{"dte"} or \code{"dtu"}.  A \code{\link[base]{data.frame}} with transcript IDs in the first columns and gene IDs in the second column. The rownames from \code{pConfirmation} must be contained in the transcript IDs from \code{tx2gene}, and the names from \code{pScreen} must be contained in the gene IDs.
+#' @param adjustment a user-defined adjustment of the confirmation stage p-values. Only applicable when \code{method} is \code{"user"} and ignored otherwise.
+#' @param ... Additional arguments passed to \code{stageWiseTest}
 #' @return
 #' A stageR/stageRTx object with stage-wise adjusted p-values.
 #' @references
-#' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
+#' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. \url{http://biorxiv.org/content/early/2017/02/16/109082}
+#' R. Heller, E. Manduchi, G. R. Grant, and W. J. Ewens, "A flexible two-stage procedure for identifying gene sets that are differentially expressed." Bioinformatics (Oxford, England), vol. 25, pp. 1019-25, 2009.
 #'
-#' R. Heller, E. Manduchi, G. R. Grant, and W. J. Ewens, “A flexible two-stage procedure for identifying gene sets that are differentially expressed.” Bioinformatics (Oxford, England), vol. 25, pp. 1019–25, 2009.
-#'
-#' S. Holm, “A Simple Sequentially Rejective Multiple Test Procedure,” Scandinavian Journal of Statistics, vol. 6, no. 2, pp. 65–70, 1979.
-#'
-#' J. P. Shaffer, “Modified Sequentially Rejective Multiple Test Procedures,” Journal of the American Statistical Asso- ciation, vol. 81, p. 826, 1986.
-#'
+#' S. Holm, "A Simple Sequentially Rejective Multiple Test Procedure," Scandinavian Journal of Statistics, vol. 6, no. 2, pp. 65-70, 1979.
+#' J. P. Shaffer, "Modified Sequentially Rejective Multiple Test Procedures," Journal of the American Statistical Association, vol. 81, p. 826, 1986.
 #' @examples
 #' pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
 #' names(pScreen)=paste0("gene",1:300)
@@ -269,16 +267,17 @@
 #' dimnames(pConfirmation)=list(paste0("gene",1:300),c("H1","H2","H3"))
 #' stageRObj <- stageR(pScreen=pScreen, pConfirmation=pConfirmation)
 #' stageRObj <- stageWiseAdjustment(stageRObj, method="holm", alpha=0.05)
-#' getAdjustedPValues(stageRObj, onlySignificantGenes=TRUE)
-#' @name stageWiseAdjustment
-#' @rdname stageWiseAdjustment
+#' getAdjustedPValues(stageRObj, onlySignificantGenes=TRUE, order=TRUE)
+#'# @name stageWiseAdjustment
+#'# @rdname stageWiseAdjustment
+#' @describeIn stageWiseAdjustment Adjust p-values in a two-stage analysis
 #' @export
 setMethod("stageWiseAdjustment",signature=signature(object="stageR", method="character", alpha="numeric"),
-	  definition=function(object, method, alpha, ...){
+	  definition=function(object, method, alpha, adjustment=NULL, ...){
 	      pScreen=getPScreen(object)
 	      pConfirmation=getPConfirmation(object)
 	      pScreenAdjusted=isPScreenAdjusted(object)
-	      stageAdjPValues <- .stageWiseTest(pScreen=pScreen, pConfirmation=pConfirmation, alpha=alpha, method=method,  pScreenAdjusted=pScreenAdjusted, ...)
+	      stageAdjPValues <- .stageWiseTest(pScreen=pScreen, pConfirmation=pConfirmation, alpha=alpha, method=method,  pScreenAdjusted=pScreenAdjusted, adjustment=adjustment, ...)
 	      object@adjustedP <- stageAdjPValues[["pAdjStage"]]
 	      object@alphaAdjusted <- stageAdjPValues[["alphaAdjusted"]]
 	      object@method <- method
@@ -286,8 +285,9 @@ setMethod("stageWiseAdjustment",signature=signature(object="stageR", method="cha
 	      object@adjusted <- TRUE
 	      return(object)
 	  })
+#' @describeIn stageWiseAdjustment Adjust p-values in a two-stage analysis
 setMethod("stageWiseAdjustment",signature=signature(object="stageRTx", method="character", alpha="numeric"),
-          definition=function(object, method, alpha, ...){
+          definition=function(object, method, alpha, tx2gene, ...){
             pScreen=getPScreen(object)
             pConfirmation=getPConfirmation(object)
             pScreenAdjusted=isPScreenAdjusted(object)
@@ -304,6 +304,7 @@ setMethod("stageWiseAdjustment",signature=signature(object="stageRTx", method="c
 #' Return screening hypothesis p-values from a \code{\link{stageRClass}} object.
 #'
 #' @param object an object of the \code{\link{stageRClass}} class.
+#' @param ... Additional arguments
 #' @return
 #' A vector of screening stage (aggregated) p-values.
 #' @examples
@@ -313,11 +314,13 @@ setMethod("stageWiseAdjustment",signature=signature(object="stageRTx", method="c
 #' dimnames(pConfirmation)=list(paste0("gene",1:300),c("H1","H2","H3"))
 #' stageRObj <- stageR(pScreen=pScreen, pConfirmation=pConfirmation)
 #' getPScreen(stageRObj)
-#' @name getPScreen
-#' @rdname getPScreen
+#'# @name getPScreen
+#'# @rdname getPScreen
+#' @describeIn getPScreen Return screening hypothesis p-values from a \code{\link{stageRClass}} object.
 #' @export
 setMethod("getPScreen",signature=signature(object="stageR"),
 	  definition=function(object){return(object@pScreen)})
+#' @describeIn getPScreen Return screening hypothesis p-values from a \code{\link{stageRClass}} object.
 setMethod("getPScreen",signature=signature(object="stageRTx"),
           definition=function(object){return(object@pScreen)})
 
@@ -333,22 +336,25 @@ setMethod("getPScreen",signature=signature(object="stageRTx"),
 #' dimnames(pConfirmation)=list(paste0("gene",1:300),c("H1","H2","H3"))
 #' stageRObj <- stageR(pScreen=pScreen, pConfirmation=pConfirmation)
 #' getPConfirmation(stageRObj)
-#' @name getPConfirmation
-#' @rdname getPConfirmation
+#'# @name getPConfirmation
+#'# @rdname getPConfirmation
+#' @describeIn getPConfirmation Return unadjusted confirmation hypothesis p-values from a \code{\link{stageRClass}} object.
 #' @export
 setMethod("getPConfirmation",signature=signature(object="stageR"),
 	  definition=function(object){return(object@pConfirmation)})
+#' @describeIn getPConfirmation Return unadjusted confirmation hypothesis p-values from a \code{\link{stageRClass}} object.
 setMethod("getPConfirmation",signature=signature(object="stageRTx"),
           definition=function(object){return(object@pConfirmation)})
 
 
 #' Retrieve the stage-wise adjusted p-values.
 #'
-#' This functions returns the stage-wise adjusted p-values for an object from the  \code{\link{stageRClass}} class. Note, that the p-values should have been adjusted with the \code{\link{stageWiseAdjustment}} function prior to calling this function.
+#' This functions returns the stage-wise adjusted p-values for an object from the  \code{\link{stageRClass}} class. Note, that the p-values should have been adjusted with the \code{\link{stageWiseAdjustment,stageR,character,numeric-method}} function prior to calling this function.
 #'
 #' @param object an object of the \code{\link{stageRClass}} class.
 #' @param onlySignificantGenes logical. If FALSE (default), all genes are returned. If TRUE, only the genes significant for the screening hypothesis are returned.
 #' @param order logical. If TRUE (default), the returned matrix of adjusted p-values are ordered based on the screening hypothesis adjusted p-value.
+#' @param ... Other arguments passed to .getAdjustedP or .getAdjustedPTx
 #' @return
 #' For complex DGE experiments (stageR object), a matrix of adjusted p-values where every row corresponds to a gene, and every column corresponds to a contrast. The first column will be the BH FDR adjusted p-value from the screening step.
 #' For transcript-level experiments (stageRTx object), a matrix of adjusted p-values where every row corresponds to a transcript.
@@ -361,27 +367,29 @@ setMethod("getPConfirmation",signature=signature(object="stageRTx"),
 #' dimnames(pConfirmation)=list(paste0("gene",1:300),c("H1","H2","H3"))
 #' stageRObj <- stageR(pScreen=pScreen, pConfirmation=pConfirmation)
 #' stageRObj <- stageWiseAdjustment(stageRObj, method="holm", alpha=0.05)
-#' head(getAdjustedPValues(stageRObj))
+#' head(getAdjustedPValues(stageRObj, onlySignificantGenes=TRUE, order=TRUE))
 #' @references
 #' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
 #'
-#' @name getAdjustedPValues
-#' @rdname getAdjustedPValues
+#'# @name getAdjustedPValues
+#'# @rdname getAdjustedPValues
+#' @describeIn getAdjustedPValues Retrieve the stage-wise adjusted p-values.
 #' @export
-setMethod("getAdjustedPValues",signature=signature(object="stageR"),
-	  definition=function(object, ...){
+setMethod("getAdjustedPValues",signature=signature(object="stageR", onlySignificantGenes="logical", order="logical"),
+	  definition=function(object, onlySignificantGenes, order, ...){
 	    if(!isAdjusted(object)) stop("adjust p-values first using stageWiseAdjustment")
 	      return(.getAdjustedP(object=object, ...))
 	  })
-setMethod("getAdjustedPValues",signature=signature(object="stageRTx"),
-          definition=function(object, ...){
+#' @describeIn getAdjustedPValues Retrieve the stage-wise adjusted p-values.
+setMethod("getAdjustedPValues",signature=signature(object="stageRTx", onlySignificantGenes="logical", order="logical"),
+          definition=function(object, onlySignificantGenes, order, ...){
             if(!isAdjusted(object)) stop("adjust p-values first using stageWiseAdjustment")
             return(.getAdjustedPTx(object=object, ...))
           })
 
 #' Get adjusted significance level from the screening stage.
 #'
-#' This functions returns the adjusted significance level from the screening stage that should be used to compare confirmation stage FWER adjusted p-values to.
+#' This functions returns the adjusted significance level from the screening stage that should be used to compare confirmation stage FWER adjusted p-values against.
 #'
 #' @param object an object of the \code{\link{stageRClass}} class.
 #' @details
@@ -393,22 +401,26 @@ setMethod("getAdjustedPValues",signature=signature(object="stageRTx"),
 #' names(pScreen)=paste0("gene",1:300)
 #' pConfirmation=matrix(runif(900),nrow=300,ncol=3)
 #' dimnames(pConfirmation)=list(paste0("gene",1:300),c("H1","H2","H3"))
-#' stageRObj <- stageR(pScreen=pScreen, pConfirmation=pConfirmation)
+#' stageRObj <- stageR(pScreen=pScreen, pConfirmation=pConfirmation, pScreenAdjusted=FALSE)
 #' stageRObj <- stageWiseAdjustment(stageRObj, method="holm", alpha=0.05)
 #' adjustedAlphaLevel(stageRObj)
+#'# @method stageR-method
 #' @references
-#' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
+#' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. \url{http://biorxiv.org/content/early/2017/02/16/109082}
 #'
-#' R. Heller, E. Manduchi, G. R. Grant, and W. J. Ewens, “A flexible two-stage procedure for identifying gene sets that are differentially expressed.” Bioinformatics (Oxford, England), vol. 25, pp. 1019–25, 2009.
+#' R. Heller, E. Manduchi, G. R. Grant, and W. J. Ewens, "A flexible two-stage procedure for identifying gene sets that are differentially expressed." Bioinformatics (Oxford, England), vol. 25, pp. 1019-25, 2009.
 #'
-#' @name adjustedAlphaLevel
-#' @rdname adjustedAlphaLevel
+#' @seealso \code{\link{stageR}}, \code{\link{stageRClass}}
+#'# @name adjustedAlphaLevel
+#'# @rdname adjustedAlphaLevel
 #' @export
+#' @describeIn adjustedAlphaLevel Get adjusted significance level from the screening stage.
 setMethod("adjustedAlphaLevel",signature=signature(object="stageR"),
 	  definition=function(object){
 	    if(!isAdjusted(object)) stop("adjust p-values first using stageWiseAdjustment")
 	    return(object@alphaAdjusted)
 	    })
+#' @describeIn adjustedAlphaLevel Get adjusted significance level from the screening stage.
 setMethod("adjustedAlphaLevel",signature=signature(object="stageRTx"),
           definition=function(object){
             if(!isAdjusted(object)) stop("adjust p-values first using stageWiseAdjustment")
@@ -435,8 +447,9 @@ setMethod("adjustedAlphaLevel",signature=signature(object="stageRTx"),
 #' @references
 #' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
 #'
-#' @name getResults
-#' @rdname getResults
+#'# @name getResults
+#'# @rdname getResults
+#' @describeIn getResults Get significance results according to a stage-wise analysis.
 #' @export
 setMethod("getResults",signature=signature(object="stageR"),
 	  definition=function(object){
@@ -444,7 +457,7 @@ setMethod("getResults",signature=signature(object="stageR"),
 	    return(.getResults(object))
 	    })
 
-#' Return significant genes when performing transcript level analysis.
+#' Return significant genes when performing transcript-level analysis.
 #'
 #' This functions returns a matrix with significant genes by aggregated testing of its respective transcripts.
 #'
@@ -469,8 +482,9 @@ setMethod("getResults",signature=signature(object="stageR"),
 #' @references
 #' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
 #'
-#' @name getSignificantGenes
-#' @rdname getSignificantGenes
+#'# @name getSignificantGenes
+#'# @rdname getSignificantGenes
+#' @describeIn getSignificantGenes Return significant genes when performing transcript level analysis.
 #' @export
 setMethod("getSignificantGenes",signature=signature(object="stageRTx"),
           definition=function(object){
@@ -488,7 +502,7 @@ setMethod("getSignificantGenes",signature=signature(object="stageRTx"),
           })
 
 
-#' Return significant transcripts when performing transcript level analysis.
+#' Return significant transcripts when performing transcript-level analysis.
 #'
 #' This functions returns a matrix with significant transctripts according to a stage-wise analysis.
 #'
@@ -512,8 +526,9 @@ setMethod("getSignificantGenes",signature=signature(object="stageRTx"),
 #' stageRObj <- stageRTx(pScreen=pScreen, pConfirmation=pConfirmation ,pScreenAdjusted=TRUE, tx2gene=tx2gene)
 #' stageRObj <- stageWiseAdjustment(stageRObj, method="dte", alpha=0.05)
 #' head(getSignificantTx(stageRObj))
-#' @name getSignificantTx
-#' @rdname getSignificantTx
+#'# @name getSignificantTx
+#'# @rdname getSignificantTx
+#' @describeIn getSignificantTx Return significant transcripts when performing transcript-level analysis.
 #' @export
 setMethod("getSignificantTx",signature=signature(object="stageRTx"),
           definition=function(object){
@@ -531,7 +546,8 @@ setMethod("getSignificantTx",signature=signature(object="stageRTx"),
 #'
 #' This functions returns the significance level on which the stage-wise adjustment is based.
 #'
-#' @param object an object of the \code{\link{stageRClass}} or \code{\link{stageRTxClass}} class.
+#' @param object an object of the \code{\link{stageRClass}} or \code{stageRTxClass} class.
+#' @param ... Additional arguments
 #' @return
 #' Returns a calar vector with the OFDR alpha level that was specified by the user.
 #' @examples
@@ -545,14 +561,16 @@ setMethod("getSignificantTx",signature=signature(object="stageRTx"),
 #' @references
 #' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
 #'
-#' @name getAlpha
-#' @rdname getAlpha
+#'# @name getAlpha
+#'# @rdname getAlpha
+#' @describeIn getAlpha Retrieve the significance level for the stage-wise adjustment.
 #' @export
 setMethod("getAlpha",signature=signature(object="stageR"),
           definition=function(object, ...){
             if(is.null(object@alpha)) stop("No significance level was specified yet. Maybe you need to run stageWiseAdjustment first.")
             return(object@alpha)
           })
+#' @describeIn getAlpha Retrieve the significance level for the stage-wise adjustment.
 setMethod("getAlpha",signature=signature(object="stageRTx"),
           definition=function(object, ...){
             if(is.null(object@alpha)) stop("No significance level was specified yet. Maybe you need to run stageWiseAdjustment first.")
@@ -563,7 +581,8 @@ setMethod("getAlpha",signature=signature(object="stageRTx"),
 #'
 #' This functions returns a data frame that links the genes with the transcripts being analysed.
 #'
-#' @param object an object of the \code{\link{stageRTxClass}} class.
+#' @param object an object of the \code{stageRTxClass} class.
+#' @param ... Additional arguments
 #' @return
 #' A matrix linking gene to transcript identifiers.
 #' @examples
@@ -583,8 +602,9 @@ setMethod("getAlpha",signature=signature(object="stageRTx"),
 #' @references
 #' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
 #'
-#' @name getTx2gene
-#' @rdname getTx2gene
+#'# @name getTx2gene
+#'# @rdname getTx2gene
+#' @describeIn getTx2gene Retrieve the data frame linking genes to transcripts.
 #' @export
 setMethod("getTx2gene",signature=signature(object="stageRTx"),
           definition=function(object, ...){
@@ -595,7 +615,8 @@ setMethod("getTx2gene",signature=signature(object="stageRTx"),
 #'
 #' This functions returns a logical stating whether the screening hypothesis p-values are already adjusted for multiple testing according to the BH FDR criterion.
 #'
-#' @param object an object of the \code{\link{stageRClass}} or \code{\link{stageRTxClass}} class.
+#' @param object an object of the \code{\link{stageRClass}} or \code{stageRTxClass} class.
+#' @param ... Additional arguments
 #' @return
 #' A logical stating whether the screening hypothesis p-values are already adjusted for multiple testing according to the BH FDR criterion.
 #' @examples
@@ -608,13 +629,15 @@ setMethod("getTx2gene",signature=signature(object="stageRTx"),
 #' @references
 #' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
 #'
-#' @name isPScreenAdjusted
-#' @rdname isPScreenAdjusted
+#'# @name isPScreenAdjusted
+#'# @rdname isPScreenAdjusted
+#' @describeIn isPScreenAdjusted Are the screening p-values adjusted for multiplicity?
 #' @export
 setMethod("isPScreenAdjusted",signature=signature(object="stageR"),
           definition=function(object, ...){
             return(object@pScreenAdjusted)
           })
+#' @describeIn isPScreenAdjusted Are the screening p-values adjusted for multiplicity?
 setMethod("isPScreenAdjusted",signature=signature(object="stageRTx"),
           definition=function(object, ...){
             return(object@pScreenAdjusted)
@@ -624,7 +647,8 @@ setMethod("isPScreenAdjusted",signature=signature(object="stageRTx"),
 #'
 #' This functions returns a logical stating whether the p-values have already been adjusted according to the stage-wise method.
 #'
-#' @param object an object of the \code{\link{stageRClass}} or \code{\link{stageRTxClass}} class.
+#' @param object an object of the \code{\link{stageRClass}} or \code{stageRTxClass} class.
+#' @param ... Additional arguments
 #' @return
 #' A logical stating whether the p-values have already been adjusted according to the stage-wise method
 #' @examples
@@ -639,13 +663,15 @@ setMethod("isPScreenAdjusted",signature=signature(object="stageRTx"),
 #' @references
 #' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
 #'
-#' @name isAdjusted
-#' @rdname isAdjusted
+#'# @name isAdjusted
+#'# @rdname isAdjusted
+#' @describeIn isAdjusted Has stage-wise adjustment already been performed on the object?
 #' @export
 setMethod("isAdjusted",signature=signature(object="stageR"),
           definition=function(object, ...){
             return(object@adjusted)
           })
+#' @describeIn isAdjusted Has stage-wise adjustment already been performed on the object?
 setMethod("isAdjusted",signature=signature(object="stageRTx"),
           definition=function(object, ...){
             return(object@adjusted)
@@ -655,7 +681,8 @@ setMethod("isAdjusted",signature=signature(object="stageRTx"),
 #'
 #' This functions retrieves the method used for FWER multiple testing correction in the confirmation stage of a stage-wise analysis.
 #'
-#' @param object an object of the \code{\link{stageRClass}} or \code{\link{stageRTxClass}} class.
+#' @param object an object of the \code{\link{stageRClass}} or \code{stageRTxClass} class.
+#' @param ... Additional arguments
 #' @return
 #' Returns a character vector of length 1 specifying the FWER correction method that is used in the confirmation stage of the stage-wise analysis.
 #' @examples
@@ -669,13 +696,15 @@ setMethod("isAdjusted",signature=signature(object="stageRTx"),
 #' @references
 #' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
 #'
-#' @name getMethod
-#' @rdname getMethod
+#'# @name getMethod
+#'# @rdname getMethod
+#' @describeIn getMethod Retrieve FWER correction method.
 #' @export
 setMethod("getMethod",signature=signature(object="stageR"),
           definition=function(object, ...){
             return(object@method)
           })
+#' @describeIn getMethod Retrieve FWER correction method.
 setMethod("getMethod",signature=signature(object="stageRTx"),
           definition=function(object, ...){
             return(object@method)

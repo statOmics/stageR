@@ -178,6 +178,7 @@ stageRObj <- stageR(pScreen=pScreen, pConfirmation=pConfirmation, pScreenAdjuste
 adjustedPSW <- stageWiseAdjustment(object=stageRObj, method="user", alpha=0.05, adjustment=c(1,1,1))
 res <- getResults(adjustedPSW)
 colSums(res)
+rm("hammer_eset.RData")
 ```
 
 # Differential transcript expression/usage

@@ -1,6 +1,6 @@
 #' @include stageRClasses.R
 
-setGeneric("stageR", function(pScreen, pConfirmation, pScreenAdjusted, ...) standardGeneric("stageR"))
+setGeneric("stageR", function(pScreen, pConfirmation, ...) standardGeneric("stageR"))
 
 setGeneric("getPScreen", function(object, ...) standardGeneric("getPScreen"))
 
@@ -8,8 +8,7 @@ setGeneric("getPConfirmation", function(object, ...) standardGeneric("getPConfir
 
 setGeneric("stageWiseAdjustment", function(object, method, alpha, ...) standardGeneric("stageWiseAdjustment"))
 
-
-setGeneric("getAdjustedPValues", function(object, ...) standardGeneric("getAdjustedPValues"))
+setGeneric("getAdjustedPValues", function(object, onlySignificantGenes, order, ...) standardGeneric("getAdjustedPValues"))
 
 setGeneric("adjustedAlphaLevel", function(object, ...) standardGeneric("adjustedAlphaLevel"))
 
