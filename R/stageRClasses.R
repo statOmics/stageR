@@ -1,4 +1,5 @@
 #' @include constructors.R
+#' @import SummarizedExperiment
 
 #' @title The stageR class
 #'
