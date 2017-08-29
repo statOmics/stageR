@@ -51,7 +51,8 @@ setClass("stageRTx",
            alpha="numeric",
            alphaAdjusted="numeric",
            adjusted="logical",
-           pScreenAdjusted="logical"
+           pScreenAdjusted="logical",
+           tx2gene="data.frame"
          )
 )
 
