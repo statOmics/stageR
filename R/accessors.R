@@ -3,194 +3,209 @@
 .stageWiseTest <- function(pScreen, pConfirmation, alpha, method=c("none","holm","dte","dtu","user"), adjustment=NULL, tx2gene=NULL, pScreenAdjusted, allowNA=FALSE){
 
   if(allowNA){
-  if(any(is.na(pScreen))){
-    naFeatures=which(is.na(pScreen))
-    message(paste0("Removing ",length(naFeatures)," features with NA screening hypothesis p-values. \n"))
-    pScreen=pScreen[-naFeatures]
-    pConfirmation=pConfirmation[-naFeatures,]
-  }
+    if(any(is.na(pScreen))){
+      naFeatures <- which(is.na(pScreen))
+      message(paste0("Removing ",length(naFeatures)," features with NA screening hypothesis p-values. \n"))
+      pScreen <- pScreen[-naFeatures]
+      pConfirmation <- pConfirmation[-naFeatures,]
+    }
   }
 
   ## check for NA values
-    if(!allowNA){
-      if(any(is.na(pScreen)) | any(is.na(pConfirmation))) stop("NA p-values found in either the screening or confirmation tests. If you want to allow for NA p-values, set allowNA=TRUE.")
-    }
+  if(!allowNA){
+    if(any(is.na(pScreen)) | any(is.na(pConfirmation)))
+      stop("NA p-values found in either the screening or confirmation tests. If you want to allow for NA p-values, set allowNA=TRUE.")
+  }
 
 
-    method <- match.arg(method,c("none","holm","dte","dtu","user"))
+  method <- match.arg(method,c("none","holm","dte","dtu","user"))
 
-        if(method=="none"){
+  if(method=="none"){
 
-          if(!pScreenAdjusted) padjScreen <- p.adjust(pScreen,"BH") else padjScreen <- pScreen
-          significanceOrdering <- order(padjScreen)
-          genesStageI <- padjScreen<=alpha
-	        pAdjConfirmation <- matrix(nrow=nrow(pConfirmation),ncol=ncol(pConfirmation), dimnames=list(c(rownames(pConfirmation)),colnames(pConfirmation)))
-	        pAdjConfirmation[genesStageI,] <- pConfirmation[genesStageI,]
-	        padjScreenReturn=padjScreen
+    if(!pScreenAdjusted)
+      padjScreen <- p.adjust(pScreen,"BH") else
+        padjScreen <- pScreen
 
-    } else if(method=="holm"){
+    significanceOrdering <- order(padjScreen)
+    genesStageI <- padjScreen<=alpha
+    pAdjConfirmation <- matrix(nrow=nrow(pConfirmation),ncol=ncol(pConfirmation),
+                               dimnames=list(c(rownames(pConfirmation)),colnames(pConfirmation)))
+    pAdjConfirmation[genesStageI,] <- pConfirmation[genesStageI,]
+    padjScreenReturn <- padjScreen
 
-      if(!pScreenAdjusted) padjScreen <- p.adjust(pScreen,"BH") else padjScreen <- pScreen
-      significanceOrdering <- order(padjScreen)
-      genesStageI <- padjScreen<=alpha
-      padjScreenReturn=padjScreen
-	## only do correction for genes that passed the screening stage
-      pAdjConfirmation <- matrix(nrow=nrow(pConfirmation),ncol=ncol(pConfirmation), dimnames=list(c(rownames(pConfirmation)),colnames(pConfirmation)))
+  } else if(method=="holm"){
 
-      pAdjConfirmation[genesStageI,] <- t(sapply(1:length(which(genesStageI)), function(i){
+    if(!pScreenAdjusted) padjScreen <- p.adjust(pScreen,"BH") else
+      padjScreen <- pScreen
+    significanceOrdering <- order(padjScreen)
+    genesStageI <- padjScreen<=alpha
+    padjScreenReturn <- padjScreen
+    ## only do correction for genes that passed the screening stage
+    pAdjConfirmation <- matrix(nrow=nrow(pConfirmation),ncol=ncol(pConfirmation),
+                               dimnames=list(c(rownames(pConfirmation)),colnames(pConfirmation)))
+
+    pAdjConfirmation[genesStageI,] <- t(sapply(1:length(which(genesStageI)), function(i){
       row <- pConfirmation[which(genesStageI)[i],]
-        # Holm correction conditional on passing the screening stage.
-        o <- order(row)
-        if(all(!is.na(row))){ #if no NA's, standard Holm with screening stage correction
-          n <- length(row)
-        } else { #if NA's present, only correct for non NA p-values
-          n <- length(row[!is.na(row)])
-        }
-        # Holm adjustment: passing screening stage implies 1 false hypothesis
-        adjustment <- c(n-1,(n-1):1)
-        if(length(adjustment)!=length(row)) adjustment = c(adjustment,rep(1,length(row)-length(adjustment)))
-        rowAdjusted <- row[o]*adjustment
-        rowAdjusted <- pmin(rowAdjusted,1)
-        rowAdjusted <- cummax(rowAdjusted)
-        rowBack <- vector(length=length(row))
-        rowBack[o] <- rowAdjusted
-        rowBack
-      }))
-
-    } else if(method=="user"){
-      if(length(adjustment)!=ncol(pConfirmation)) stop("the length of the adjustment vector is not equal to the number of confirmation hypotheses as defined by the number of columns in pConfirmation.")
-      if(!pScreenAdjusted) padjScreen <- p.adjust(pScreen,"BH") else padjScreen <- pScreen
-      significanceOrdering <- order(padjScreen)
-      genesStageI <- padjScreen<=alpha
-      padjScreenReturn=padjScreen
-      pAdjConfirmation <- matrix(nrow=nrow(pConfirmation),ncol=ncol(pConfirmation), dimnames=list(c(rownames(pConfirmation)),colnames(pConfirmation)))
-      pAdjConfirmation[genesStageI,] <- t(sapply(1:length(which(genesStageI)), function(i){
-        row <- pConfirmation[which(genesStageI)[i],]
-        o <- order(row)
-		    rowAdjusted <- row[o]*adjustment
-		    rowAdjusted <- pmin(rowAdjusted,1)
-		    # check monotone increase of adjusted p-values
-		    rowAdjusted <- cummax(rowAdjusted)
-		    rowBack <- vector(length=length(row))
-		    rowBack[o] <- rowAdjusted
-		    rowBack
-	  }))
-
-    } else if(method=="dte"){
-
-      if(any(is.na(match(rownames(pConfirmation),tx2gene[,1])))) stop("not all transcript names in pConfirmation match with a transcript ID from the tx2gene object.")
-      if(any(is.na(match(names(pScreen),tx2gene[,2])))) stop("not all gene names in pScreen match with a gene ID from the tx2gene object.")
-      # adjust screening
-      if(!pScreenAdjusted) padjScreen <- p.adjust(pScreen,"BH") else padjScreen <- pScreen
-      significanceOrdering <- order(padjScreen)
-      genesStageI <- padjScreen<=alpha
-      significantGenes <- names(padjScreen)[genesStageI]
-      geneForEachTx <- tx2gene[match(rownames(pConfirmation),tx2gene[,1]),2]
-      txLevelAdjustments <- sapply(significantGenes,function(gene){
-        id <- which(geneForEachTx %in% gene)
-        row <- pConfirmation[id,]
-        #make sure names are passed along if only one tx
-        if(length(id)==1) names(row)=rownames(pConfirmation)[id]
-        o <- order(row)
+      # Holm correction conditional on passing the screening stage.
+      o <- order(row)
+      if(all(!is.na(row))){ #if no NA's, standard Holm with screening stage correction
         n <- length(row)
-        # DTE adjustment: passing screening stage implies 1 false hypothesis
-        if(n==1) adjustment=0 else adjustment=c(n-1,(n-1):1)
-        rowAdjusted <- row[o]*adjustment
-        rowAdjusted <- pmin(rowAdjusted,1)
-        rowAdjusted <- cummax(rowAdjusted)
-        rowBack <- vector(length=length(row))
-        rowBack[o] <- rowAdjusted
-        names(rowBack) <- names(row)
-        rowBack
-      })
-      pAdjConfirmation <- matrix(nrow=nrow(pConfirmation),ncol=1)
-      rownames(pAdjConfirmation) <- paste0(geneForEachTx,".",rownames(pConfirmation))
-      # adjusted p-values for screening hypothesis
-      padjScreenReturn <- padjScreen[geneForEachTx]
-      # adjusted p-values for confirmation hypothesis
-      pAdjConfirmation[names(unlist(txLevelAdjustments)),1] = unlist(txLevelAdjustments)
+      } else { #if NA's present, only correct for non NA p-values
+        n <- length(row[!is.na(row)])
+      }
+      # Holm adjustment: passing screening stage implies 1 false hypothesis
+      adjustment <- c(n-1,(n-1):1)
+      if(length(adjustment)!=length(row)) adjustment <- c(adjustment,
+                                                         rep(1,length(row)-length(adjustment)))
+      rowAdjusted <- row[o]*adjustment
+      rowAdjusted <- pmin(rowAdjusted,1)
+      rowAdjusted <- cummax(rowAdjusted)
+      rowBack <- vector(length=length(row))
+      rowBack[o] <- rowAdjusted
+      rowBack
+    }))
 
-    } else if(method=="dtu"){
+  } else if(method=="user"){
+    if(length(adjustment)!=ncol(pConfirmation))
+      stop("the length of the adjustment vector is not equal to the number of confirmation hypotheses as defined by the number of columns in pConfirmation.")
+    if(!pScreenAdjusted) padjScreen <- p.adjust(pScreen,"BH") else
+      padjScreen <- pScreen
+    significanceOrdering <- order(padjScreen)
+    genesStageI <- padjScreen<=alpha
+    padjScreenReturn=padjScreen
+    pAdjConfirmation <- matrix(nrow=nrow(pConfirmation),ncol=ncol(pConfirmation),
+                               dimnames=list(c(rownames(pConfirmation)),colnames(pConfirmation)))
+    pAdjConfirmation[genesStageI,] <- t(sapply(1:length(which(genesStageI)), function(i){
+      row <- pConfirmation[which(genesStageI)[i],]
+      o <- order(row)
+      rowAdjusted <- row[o]*adjustment
+      rowAdjusted <- pmin(rowAdjusted,1)
+      # check monotone increase of adjusted p-values
+      rowAdjusted <- cummax(rowAdjusted)
+      rowBack <- vector(length=length(row))
+      rowBack[o] <- rowAdjusted
+      rowBack
+    }))
 
-      if(any(is.na(match(rownames(pConfirmation),tx2gene[,1])))) stop("not all transcript names in pConfirmation match with a transcript ID from the tx2gene object.")
-      if(any(is.na(match(names(pScreen),tx2gene[,2])))) stop("not all gene names in pScreen match with a gene ID from the tx2gene object.")
-      # adjust screening
-      if(!pScreenAdjusted) padjScreen <- p.adjust(pScreen,"BH") else padjScreen <- pScreen
-      significanceOrdering <- order(padjScreen)
-      genesStageI <- padjScreen<=alpha
-      significantGenes <- names(padjScreen)[genesStageI]
-      geneForEachTx <- as.character(tx2gene[match(rownames(pConfirmation),tx2gene[,1]),2])
-      txLevelAdjustments <- sapply(significantGenes,function(gene){
-        id <- which(geneForEachTx %in% gene)
-        row <- pConfirmation[id,]
-        o <- order(row)
-        n <- length(row)
-        # DTU adjustment: passing screening stage implies 2 false hypotheses
-        if(n==2) adjustment=c(0,0) else adjustment=c(n-2,n-2,(n-2):1)
-        rowAdjusted <- row[o]*adjustment
-        rowAdjusted <- pmin(rowAdjusted,1)
-        rowAdjusted <- cummax(rowAdjusted)
-        rowBack <- vector(length=length(row))
-        rowBack[o] <- rowAdjusted
-        names(rowBack) <- names(row)
-        rowBack
-      })
-      pAdjConfirmation <- matrix(nrow=nrow(pConfirmation),ncol=1)
-      rownames(pAdjConfirmation) <- paste0(geneForEachTx,".",rownames(pConfirmation))
-      # adjusted p-values for screening hypothesis
-      padjScreenReturn <- padjScreen[as.character(geneForEachTx)]
-      # adjusted p-values for confirmation hypothesis
-      pAdjConfirmation[names(unlist(txLevelAdjustments)),1] = unlist(txLevelAdjustments)
+  } else if(method=="dte"){
 
-    } else stop("method must be either one of 'holm' or ... ")
+    if(any(is.na(match(rownames(pConfirmation),tx2gene[,1]))))
+      stop("not all transcript names in pConfirmation match with a transcript ID from the tx2gene object.")
+    if(any(is.na(match(names(pScreen),tx2gene[,2]))))
+      stop("not all gene names in pScreen match with a gene ID from the tx2gene object.")
+    # adjust screening
+    if(!pScreenAdjusted) padjScreen <- p.adjust(pScreen,"BH") else padjScreen <- pScreen
+    significanceOrdering <- order(padjScreen)
+    genesStageI <- padjScreen<=alpha
+    significantGenes <- names(padjScreen)[genesStageI]
+    geneForEachTx <- tx2gene[match(rownames(pConfirmation),tx2gene[,1]),2]
+    txLevelAdjustments <- sapply(significantGenes,function(gene){
+      id <- which(geneForEachTx %in% gene)
+      row <- pConfirmation[id,]
+      #make sure names are passed along if only one tx
+      if(length(id)==1) names(row)=rownames(pConfirmation)[id]
+      o <- order(row)
+      n <- length(row)
+      # DTE adjustment: passing screening stage implies 1 false hypothesis
+      if(n==1) adjustment=0 else adjustment=c(n-1,(n-1):1)
+      rowAdjusted <- row[o]*adjustment
+      rowAdjusted <- pmin(rowAdjusted,1)
+      rowAdjusted <- cummax(rowAdjusted)
+      rowBack <- vector(length=length(row))
+      rowBack[o] <- rowAdjusted
+      names(rowBack) <- names(row)
+      rowBack
+    })
+    pAdjConfirmation <- matrix(nrow=nrow(pConfirmation),ncol=1)
+    rownames(pAdjConfirmation) <- paste0(geneForEachTx,".",rownames(pConfirmation))
+    # adjusted p-values for screening hypothesis
+    padjScreenReturn <- padjScreen[geneForEachTx]
+    # adjusted p-values for confirmation hypothesis
+    pAdjConfirmation[names(unlist(txLevelAdjustments)),1] = unlist(txLevelAdjustments)
 
-    #BH-adjusted s.l.
-    alphaAdjusted <- sum(padjScreen<=alpha)/length(padjScreen)*alpha
-    #Correct FWER-adjusted p-values acc. to BH-adjusted s.l.
-    pAdjConfirmation[!is.na(pAdjConfirmation)] <- pmin(pAdjConfirmation[!is.na(pAdjConfirmation)]*length(padjScreen)/sum(padjScreen<=alpha),1)
-    if(!(method %in% c("dte","dtu"))){
-      pAdjStage <- cbind(padjScreenReturn,pAdjConfirmation)
-      colnames(pAdjStage)[1] <- "padjScreen"
-    }
-    if(method %in% c("dte","dtu")){
-      pAdjStage=cbind(pAdjConfirmation,padjScreenReturn)[,2:1]
-      colnames(pAdjStage) = c("gene","transcript")
-    }
-    return(list(pAdjStage=pAdjStage, alphaAdjusted=alphaAdjusted))
+  } else if(method=="dtu"){
+
+    if(any(is.na(match(rownames(pConfirmation),tx2gene[,1]))))
+      stop("not all transcript names in pConfirmation match with a transcript ID from the tx2gene object.")
+    if(any(is.na(match(names(pScreen),tx2gene[,2]))))
+      stop("not all gene names in pScreen match with a gene ID from the tx2gene object.")
+    # adjust screening
+    if(!pScreenAdjusted) padjScreen <- p.adjust(pScreen,"BH") else padjScreen <- pScreen
+    significanceOrdering <- order(padjScreen)
+    genesStageI <- padjScreen<=alpha
+    significantGenes <- names(padjScreen)[genesStageI]
+    geneForEachTx <- as.character(tx2gene[match(rownames(pConfirmation),tx2gene[,1]),2])
+    txLevelAdjustments <- sapply(significantGenes,function(gene){
+      id <- which(geneForEachTx %in% gene)
+      row <- pConfirmation[id,]
+      o <- order(row)
+      n <- length(row)
+      # DTU adjustment: passing screening stage implies 2 false hypotheses
+      if(n==2) adjustment=c(0,0) else adjustment=c(n-2,n-2,(n-2):1)
+      rowAdjusted <- row[o]*adjustment
+      rowAdjusted <- pmin(rowAdjusted,1)
+      rowAdjusted <- cummax(rowAdjusted)
+      rowBack <- vector(length=length(row))
+      rowBack[o] <- rowAdjusted
+      names(rowBack) <- names(row)
+      rowBack
+    })
+    pAdjConfirmation <- matrix(nrow=nrow(pConfirmation),ncol=1)
+    rownames(pAdjConfirmation) <- paste0(geneForEachTx,".",rownames(pConfirmation))
+    # adjusted p-values for screening hypothesis
+    padjScreenReturn <- padjScreen[as.character(geneForEachTx)]
+    # adjusted p-values for confirmation hypothesis
+    pAdjConfirmation[names(unlist(txLevelAdjustments)),1] <- unlist(txLevelAdjustments)
+
+  } else stop("method must be either one of 'holm' or ... ")
+
+  #BH-adjusted s.l.
+  alphaAdjusted <- sum(padjScreen<=alpha)/length(padjScreen)*alpha
+  #Correct FWER-adjusted p-values acc. to BH-adjusted s.l.
+  pAdjConfirmation[!is.na(pAdjConfirmation)] <- pmin(pAdjConfirmation[!is.na(pAdjConfirmation)]*length(padjScreen)/sum(padjScreen<=alpha),1)
+  if(!(method %in% c("dte","dtu"))){
+    pAdjStage <- cbind(padjScreenReturn,pAdjConfirmation)
+    colnames(pAdjStage)[1] <- "padjScreen"
+  }
+  if(method %in% c("dte","dtu")){
+    pAdjStage <- cbind(pAdjConfirmation,padjScreenReturn)[,2:1]
+    colnames(pAdjStage) <- c("gene","transcript")
+  }
+  return(list(pAdjStage=pAdjStage, alphaAdjusted=alphaAdjusted))
 }
 
 .getAdjustedP <- function(object, onlySignificantGenes=FALSE, order=TRUE){
   ## this function is used in getAdjustedPValues to return the adjusted p-values for a stageR class.
   warning(paste0("The returned adjusted p-values are based on a stage-wise testing approach and are only valid for the provided target OFDR level of ",getAlpha(object)*100,"%. If a different target OFDR level is of interest, the entire adjustment should be re-run. \n"), call.=FALSE)
-	if(onlySignificantGenes){ #significant genes
-	    genesStageI <- object@adjustedP[,1]<=getAlpha(object)
-	    if(sum(genesStageI)==0){
-	      message(paste0("No genes were found to be significant on a ",alpha*100,"% OFDR level."))
-	      } else {
-	      if(order){
-	        sigGenes=object@adjustedP[genesStageI,]
-	        o=order(sigGenes[,1])
-	        return(sigGenes[o,])
-	      } else {
-	        sigGenes=object@adjustedP[genesStageI,]
-	        return(sigGenes)
-	      }
-	      }
-	} else { #all genes
-	  if(order){
-	    o=order(object@adjustedP[,1])
-	    return(object@adjustedP[o,])
-	  } else {
-	    return(object@adjustedP)
-	  }
-	}
+  if(onlySignificantGenes){ #significant genes
+    genesStageI <- object@adjustedP[,1]<=getAlpha(object)
+    if(sum(genesStageI)==0){
+      message(paste0("No genes were found to be significant on a ",alpha*100,"% OFDR level."))
+    } else {
+      if(order){
+        sigGenes <- object@adjustedP[genesStageI,]
+        o <- order(sigGenes[,1])
+        return(sigGenes[o,])
+      } else {
+        sigGenes <- object@adjustedP[genesStageI,]
+        return(sigGenes)
+      }
+    }
+  } else { #all genes
+    if(order){
+      o <- order(object@adjustedP[,1])
+      return(object@adjustedP[o,])
+    } else {
+      return(object@adjustedP)
+    }
+  }
 }
 
 .getAdjustedPTx <- function(object, onlySignificantGenes=FALSE, order=TRUE){
   ## this function is used in getAdjustedPValues to return the adjusted p-values for a stageRTx class.
   warning(paste0("The returned adjusted p-values are based on a stage-wise testing approach and are only valid for the provided target OFDR level of ",getAlpha(object)*100,"%. If a different target OFDR level is of interest, the entire adjustment should be re-run. \n"), call.=FALSE)
-  tx2gene=getTx2gene(object)
-  pConfirmation=getPConfirmation(object)
+  tx2gene <- getTx2gene(object)
+  pConfirmation <- getPConfirmation(object)
   geneForEachTx <- tx2gene[match(rownames(pConfirmation),tx2gene[,1]),2]
 
   if(onlySignificantGenes){ #significant genes
@@ -199,10 +214,10 @@
       message(paste0("No genes were found to be significant on a ",alpha*100,"% OFDR level."))
     } else {
       if(order){ #sort
-        ordGenes = order(object@adjustedP[genesStageI,1])
-        sigGeneIDs=unlist(lapply(strsplit(names(genesStageI),split=".",fixed=TRUE), function(x) x[1] ))
+        ordGenes <- order(object@adjustedP[genesStageI,1])
+        sigGeneIDs <- unlist(lapply(strsplit(names(genesStageI),split=".",fixed=TRUE), function(x) x[1] ))
         #order acc to gene significance
-        idList = sapply(unique(sigGeneIDs[ordGenes]), function(gene) which(geneForEachTx%in%gene))
+        idList <- sapply(unique(sigGeneIDs[ordGenes]), function(gene) which(geneForEachTx%in%gene))
         #order tx within gene
         idListOrdTx <- lapply(idList, function(x) x[order(pConfirmation[x,])])
         outData <- object@adjustedP[unlist(idListOrdTx),]
@@ -216,18 +231,18 @@
     }
   } else { #all genes
     if(order){ #sort
-      ordGenes = order(object@adjustedP[,1])
-      sigGeneIDs=unlist(lapply(strsplit(rownames(object@adjustedP),split=".",fixed=TRUE), function(x) x[1] ))
+      ordGenes <- order(object@adjustedP[,1])
+      sigGeneIDs <- unlist(lapply(strsplit(rownames(object@adjustedP),split=".",fixed=TRUE), function(x) x[1] ))
       #order acc to gene significance
-      idList = sapply(unique(sigGeneIDs[ordGenes]), function(gene) which(geneForEachTx%in%gene))
+      idList <- sapply(unique(sigGeneIDs[ordGenes]), function(gene) which(geneForEachTx%in%gene))
       #order tx within gene
       idListOrdTx <- lapply(idList, function(x) x[order(pConfirmation[x,])])
       outData <- object@adjustedP[unlist(idListOrdTx),]
       outData <- data.frame("geneID"=sigGeneIDs[ordGenes],"txID"=unlist(lapply(strsplit(rownames(outData),split=".",fixed=TRUE), function(x) x[2] )),outData, row.names=NULL)
       return(outData)
-      } else { #dont sort
-        outData <- object@adjustedP
-        outData <- data.frame("geneID"=unlist(lapply(strsplit(rownames(outData),split=".",fixed=TRUE), function(x) x[1] )),"txID"=unlist(lapply(strsplit(rownames(outData),split=".",fixed=TRUE), function(x) x[2] )),outData, row.names=NULL)
+    } else { #dont sort
+      outData <- object@adjustedP
+      outData <- data.frame("geneID"=unlist(lapply(strsplit(rownames(outData),split=".",fixed=TRUE), function(x) x[1] )),"txID"=unlist(lapply(strsplit(rownames(outData),split=".",fixed=TRUE), function(x) x[2] )),outData, row.names=NULL)
       return(outData)
     }
   }
@@ -235,10 +250,10 @@
 
 .getResults <- function(object){
   if(class(object)!="stageR") stop("object should be from the stageR class.")
-    adjustedPValues = getAdjustedPValues(object, onlySignificantGenes=FALSE, order=FALSE)
-    results=matrix(0,nrow=nrow(adjustedPValues),ncol=ncol(adjustedPValues), dimnames=dimnames(adjustedPValues))
-    results[adjustedPValues<=getAlpha(object)] = 1
-    return(results)
+  adjustedPValues <- getAdjustedPValues(object, onlySignificantGenes=FALSE, order=FALSE)
+  results <- matrix(0,nrow=nrow(adjustedPValues),ncol=ncol(adjustedPValues), dimnames=dimnames(adjustedPValues))
+  results[adjustedPValues<=getAlpha(object)] = 1
+  return(results)
 }
 
 
@@ -273,33 +288,50 @@
 #' @describeIn stageWiseAdjustment Adjust p-values in a two-stage analysis
 #' @export
 setMethod("stageWiseAdjustment",signature=signature(object="stageR", method="character", alpha="numeric"),
-	  definition=function(object, method, alpha, adjustment=NULL, ...){
-	      pScreen=getPScreen(object)
-	      pConfirmation=getPConfirmation(object)
-	      pScreenAdjusted=isPScreenAdjusted(object)
-	      stageAdjPValues <- .stageWiseTest(pScreen=pScreen, pConfirmation=pConfirmation, alpha=alpha, method=method,  pScreenAdjusted=pScreenAdjusted, adjustment=adjustment, ...)
-	      object@adjustedP <- stageAdjPValues[["pAdjStage"]]
-	      object@alphaAdjusted <- stageAdjPValues[["alphaAdjusted"]]
-	      object@method <- method
-	      object@alpha <- alpha
-	      object@adjusted <- TRUE
-	      return(object)
-	  })
-#' @describeIn stageWiseAdjustment Adjust p-values in a two-stage analysis
-setMethod("stageWiseAdjustment",signature=signature(object="stageRTx", method="character", alpha="numeric"),
-          definition=function(object, method, alpha, tx2gene, ...){
-            pScreen=getPScreen(object)
-            pConfirmation=getPConfirmation(object)
-            pScreenAdjusted=isPScreenAdjusted(object)
-            tx2gene=getTx2gene(object)
-            stageAdjPValues <- .stageWiseTest(pScreen=pScreen, pConfirmation=pConfirmation, alpha=alpha, method=method,  pScreenAdjusted=pScreenAdjusted, tx2gene=tx2gene, ...)
-          object@adjustedP <- stageAdjPValues[["pAdjStage"]]
-          object@alphaAdjusted <- stageAdjPValues[["alphaAdjusted"]]
-          object@method <- method
-          object@alpha <- alpha
-          object@adjusted <- TRUE
-          return(object)
+          definition=function(object, method, alpha, adjustment=NULL, ...){
+            pScreen <- getPScreen(object)
+            pConfirmation <- getPConfirmation(object)
+            pScreenAdjusted <- isPScreenAdjusted(object)
+            stageAdjPValues <- .stageWiseTest(pScreen=pScreen, pConfirmation=pConfirmation, alpha=alpha, method=method,  pScreenAdjusted=pScreenAdjusted, adjustment=adjustment, ...)
+            object@adjustedP <- stageAdjPValues[["pAdjStage"]]
+            object@alphaAdjusted <- stageAdjPValues[["alphaAdjusted"]]
+            object@method <- method
+            object@alpha <- alpha
+            object@adjusted <- TRUE
+            return(object)
           })
+#' @describeIn stageWiseAdjustment Adjust p-values in a two-stage analysis
+setMethod(
+  "stageWiseAdjustment",
+  signature = signature(
+    object = "stageRTx",
+    method = "character",
+    alpha = "numeric"
+  ),
+  definition = function(object, method, alpha, tx2gene, ...) {
+    pScreen <- getPScreen(object)
+    pConfirmation <- getPConfirmation(object)
+    pScreenAdjusted <- isPScreenAdjusted(object)
+    tx2gene <- getTx2gene(object)
+    stageAdjPValues <-
+      .stageWiseTest(
+        pScreen = pScreen,
+        pConfirmation = pConfirmation,
+        alpha = alpha,
+        method = method,
+        pScreenAdjusted = pScreenAdjusted,
+        tx2gene = tx2gene,
+        ...
+      )
+    object@adjustedP <- stageAdjPValues[["pAdjStage"]]
+    object@alphaAdjusted <-
+      stageAdjPValues[["alphaAdjusted"]]
+    object@method <- method
+    object@alpha <- alpha
+    object@adjusted <- TRUE
+    return(object)
+  }
+)
 
 #' Return screening hypothesis p-values from a \code{\link{stageRClass}} object.
 #'
@@ -319,7 +351,7 @@ setMethod("stageWiseAdjustment",signature=signature(object="stageRTx", method="c
 #' @describeIn getPScreen Return screening hypothesis p-values from a \code{\link{stageRClass}} object.
 #' @export
 setMethod("getPScreen",signature=signature(object="stageR"),
-	  definition=function(object){return(object@pScreen)})
+          definition=function(object){return(object@pScreen)})
 #' @describeIn getPScreen Return screening hypothesis p-values from a \code{\link{stageRClass}} object.
 setMethod("getPScreen",signature=signature(object="stageRTx"),
           definition=function(object){return(object@pScreen)})
@@ -341,7 +373,7 @@ setMethod("getPScreen",signature=signature(object="stageRTx"),
 #' @describeIn getPConfirmation Return unadjusted confirmation hypothesis p-values from a \code{\link{stageRClass}} object.
 #' @export
 setMethod("getPConfirmation",signature=signature(object="stageR"),
-	  definition=function(object){return(object@pConfirmation)})
+          definition=function(object){return(object@pConfirmation)})
 #' @describeIn getPConfirmation Return unadjusted confirmation hypothesis p-values from a \code{\link{stageRClass}} object.
 setMethod("getPConfirmation",signature=signature(object="stageRTx"),
           definition=function(object){return(object@pConfirmation)})
@@ -376,10 +408,10 @@ setMethod("getPConfirmation",signature=signature(object="stageRTx"),
 #' @describeIn getAdjustedPValues Retrieve the stage-wise adjusted p-values.
 #' @export
 setMethod("getAdjustedPValues",signature=signature(object="stageR", onlySignificantGenes="logical", order="logical"),
-	  definition=function(object, onlySignificantGenes, order, ...){
-	    if(!isAdjusted(object)) stop("adjust p-values first using stageWiseAdjustment")
-	      return(.getAdjustedP(object=object, ...))
-	  })
+          definition=function(object, onlySignificantGenes, order, ...){
+            if(!isAdjusted(object)) stop("adjust p-values first using stageWiseAdjustment")
+            return(.getAdjustedP(object=object, ...))
+          })
 #' @describeIn getAdjustedPValues Retrieve the stage-wise adjusted p-values.
 setMethod("getAdjustedPValues",signature=signature(object="stageRTx", onlySignificantGenes="logical", order="logical"),
           definition=function(object, onlySignificantGenes, order, ...){
@@ -416,16 +448,16 @@ setMethod("getAdjustedPValues",signature=signature(object="stageRTx", onlySignif
 #' @export
 #' @describeIn adjustedAlphaLevel Get adjusted significance level from the screening stage.
 setMethod("adjustedAlphaLevel",signature=signature(object="stageR"),
-	  definition=function(object){
-	    if(!isAdjusted(object)) stop("adjust p-values first using stageWiseAdjustment")
-	    return(object@alphaAdjusted)
-	    })
+          definition=function(object){
+            if(!isAdjusted(object)) stop("adjust p-values first using stageWiseAdjustment")
+            return(object@alphaAdjusted)
+          })
 #' @describeIn adjustedAlphaLevel Get adjusted significance level from the screening stage.
 setMethod("adjustedAlphaLevel",signature=signature(object="stageRTx"),
           definition=function(object){
             if(!isAdjusted(object)) stop("adjust p-values first using stageWiseAdjustment")
             return(object@alphaAdjusted)
-            })
+          })
 
 #' Get significance results according to a stage-wise analysis.
 #'
@@ -452,10 +484,10 @@ setMethod("adjustedAlphaLevel",signature=signature(object="stageRTx"),
 #' @describeIn getResults Get significance results according to a stage-wise analysis.
 #' @export
 setMethod("getResults",signature=signature(object="stageR"),
-	  definition=function(object){
-	    if(!isAdjusted(object)) stop("adjust p-values first using stageWiseAdjustment")
-	    return(.getResults(object))
-	    })
+          definition=function(object){
+            if(!isAdjusted(object)) stop("adjust p-values first using stageWiseAdjustment")
+            return(.getResults(object))
+          })
 
 #' Return significant genes when performing transcript-level analysis.
 #'
@@ -490,14 +522,14 @@ setMethod("getSignificantGenes",signature=signature(object="stageRTx"),
           definition=function(object){
             if(!isAdjusted(object)) stop("adjust p-values first using stageWiseAdjustment")
             if(class(object)!="stageRTx") stop("this function only works on an object of class stageRTx")
-            adjustedPValues=getAdjustedPValues(object, onlySignificantGenes=FALSE, order=FALSE)
-            geneIDs=adjustedPValues$geneID
-            pScreenAdjusted=adjustedPValues[,"gene"]
-            significantGeneIDs=which(pScreenAdjusted<=getAlpha(object))
-            significantGeneNames=geneIDs[significantGeneIDs]
-            geneAdjustedPValues=adjustedPValues[significantGeneIDs,"gene"]
-            dups=duplicated(significantGeneNames)
-            significantGenes=matrix(geneAdjustedPValues[!dups],ncol=1,dimnames=list(significantGeneNames[!dups],"FDR adjusted p-value"))
+            adjustedPValues <- getAdjustedPValues(object, onlySignificantGenes=FALSE, order=FALSE)
+            geneIDs <- adjustedPValues$geneID
+            pScreenAdjusted <- adjustedPValues[,"gene"]
+            significantGeneIDs <- which(pScreenAdjusted<=getAlpha(object))
+            significantGeneNames <- geneIDs[significantGeneIDs]
+            geneAdjustedPValues <- adjustedPValues[significantGeneIDs,"gene"]
+            dups <- duplicated(significantGeneNames)
+            significantGenes <- matrix(geneAdjustedPValues[!dups],ncol=1,dimnames=list(significantGeneNames[!dups],"FDR adjusted p-value"))
             return(significantGenes)
           })
 
@@ -534,11 +566,11 @@ setMethod("getSignificantTx",signature=signature(object="stageRTx"),
           definition=function(object){
             if(!isAdjusted(object)) stop("adjust p-values first using stageWiseAdjustment")
             if(class(object)!="stageRTx") stop("this function only works on an object of class stageRTx")
-            adjustedPValues=getAdjustedPValues(object, onlySignificantGenes=FALSE, order=FALSE)
-            txIDs=adjustedPValues$txID
-            significantTxIDs=which(adjustedPValues[,"transcript"]<=getAlpha(object))
-            significantTxNames=txIDs[significantTxIDs]
-            significantTranscripts=matrix(adjustedPValues[significantTxIDs,"transcript"],ncol=1,dimnames=list(significantTxNames,"stage-wise adjusted p-value"))
+            adjustedPValues <- getAdjustedPValues(object, onlySignificantGenes=FALSE, order=FALSE)
+            txIDs <- adjustedPValues$txID
+            significantTxIDs <- which(adjustedPValues[,"transcript"]<=getAlpha(object))
+            significantTxNames <- txIDs[significantTxIDs]
+            significantTranscripts <- matrix(adjustedPValues[significantTxIDs,"transcript"],ncol=1,dimnames=list(significantTxNames,"stage-wise adjusted p-value"))
             return(significantTranscripts)
           })
 

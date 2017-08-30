@@ -22,6 +22,10 @@ Suggests:
     knitr,
     rmarkdown,
     BiocStyle,
-    methods
+    methods,
+    Biobase,
+    edgeR,
+    limma,
+    DEXSeq
 VignetteBuilder: knitr
 Imports:

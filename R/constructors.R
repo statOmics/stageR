@@ -18,8 +18,8 @@
 #' @rdname stageR
 #' @export
 #setMethod("stageR", signature=signature(pScreen="numeric", pConfirmation="matrix"),
- #         definition=function(pScreen, pConfirmation, pScreenAdjusted=FALSE){
-  stageR <- function(pScreen, pConfirmation, pScreenAdjusted=FALSE){
+#         definition=function(pScreen, pConfirmation, pScreenAdjusted=FALSE){
+stageR <- function(pScreen, pConfirmation, pScreenAdjusted=FALSE){
   if(length(pScreen)!=nrow(pConfirmation)) stop("The number of screening hypothesis p-values must be equal to the number of rows in pConfirmation.")
   if(!identical(as.character(names(pScreen)),as.character(rownames(pConfirmation)))) warning("The features (names) in pScreen are not identical to the features (rownames) in pConfirmation.")
   stageR <- new("stageR")
