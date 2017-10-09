@@ -1,7 +1,6 @@
 #' @include stageRClasses.R
 
-
-print.stageR <- function(object, ...) {
+setMethod("show", "stageR", function(object){
   cat("stageR object, containing: \n")
   if (!isAdjusted(object)) {
     cat(paste0(length(getPScreen(object)), " screening hypothesis p-values \n"))
@@ -31,13 +30,9 @@ print.stageR <- function(object, ...) {
     )
 
   }
-}
+})
 
-setMethod("show", "stageR", function(object)
-  print.stageR(object))
-
-
-print.stageRTx <- function(object, ...) {
+setMethod("show", "stageRTx", function(object){
   cat("stageRTx object, containing: \n")
   if (!isAdjusted(object)) {
     cat(paste0(length(getPScreen(object)), " screening hypothesis p-values \n"))
@@ -67,7 +62,4 @@ print.stageRTx <- function(object, ...) {
     )
 
   }
-}
-
-setMethod("show", "stageRTx", function(object)
-  print.stageRTx(object))
+})

@@ -6,10 +6,6 @@ To install the package from the GitHub repository in R please use
 
 ```
 library(devtools)
-if(!all(c("BiocStyle","BiocInstaller") %in% installed.packages()[,1])){
-source("https://bioconductor.org/biocLite.R")
-biocLite("BiocStyle")
-}
 install_github("statOmics/stageR")
 ```
 
