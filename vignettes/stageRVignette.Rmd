@@ -20,7 +20,7 @@ vignette: >
   
   # Installing and loading the package
   
-  The package is hosted on GitHub and can be installed with the `devtools` library.
+The package is hosted on GitHub and can be installed with the `devtools` library using `devtools::install_github("statOmics/stageR")`.
   
 ```{r}
 library(stageR)

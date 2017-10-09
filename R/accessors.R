@@ -226,7 +226,7 @@
   geneForEachTx <- tx2gene[match(rownames(pConfirmation),tx2gene[,1]),2]
 
   if(onlySignificantGenes){ #significant genes
-    genesStageI <- which(object@adjustedP[,"padjScreen"]<=getAlpha(object))
+    genesStageI <- which(object@adjustedP[,"gene"]<=getAlpha(object))
     if(sum(genesStageI)==0){
       message(paste0("No genes were found to be significant on a ",alpha*100,"% OFDR level."))
     } else {
@@ -248,7 +248,7 @@
     }
   } else { #all genes
     if(order){ #sort
-      ordGenes <- order(object@adjustedP[,"padjScreen"])
+      ordGenes <- order(object@adjustedP[,"gene"])
       sigGeneIDs <- unlist(lapply(strsplit(rownames(object@adjustedP),split=".",fixed=TRUE), function(x) x[1] ))
       #order acc to gene significance
       idList <- sapply(unique(sigGeneIDs[ordGenes]), function(gene) which(geneForEachTx%in%gene))
