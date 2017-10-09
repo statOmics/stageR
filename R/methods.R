@@ -3,8 +3,8 @@
 setMethod("show", "stageR", function(object){
   cat("stageR object, containing: \n")
   if (!isAdjusted(object)) {
-    cat(paste0(length(getPScreen(object)), " screening hypothesis p-values \n"))
-    cat(paste0(
+    cat(paste0("- ",length(getPScreen(object)), " screening hypothesis p-values \n"))
+    cat(paste0("- ",
       ncol(getPConfirmation(object)),
       " confirmation hypotheses for ",
       nrow(getPConfirmation(object)),
@@ -12,16 +12,16 @@ setMethod("show", "stageR", function(object){
     ))
   }
   if (isAdjusted(object)) {
-    cat(paste0(length(getPScreen(object)), " screening hypothesis p-values \n"))
-    cat(paste0(
+    cat(paste0("- ",length(getPScreen(object)), " screening hypothesis p-values \n"))
+    cat(paste0("- ",
       ncol(getPConfirmation(object)),
-      " confirmation hypotheses for",
+      " confirmation hypotheses for ",
       nrow(getPConfirmation(object)),
       " genes \n"
     ))
     cat(
       paste0(
-        "adjusted p-values on a ",
+        "- adjusted p-values on a ",
         getAlpha(object) * 100,
         "% OFDR level with the following FWER correction method: ",
         getMethod(object),
@@ -35,8 +35,8 @@ setMethod("show", "stageR", function(object){
 setMethod("show", "stageRTx", function(object){
   cat("stageRTx object, containing: \n")
   if (!isAdjusted(object)) {
-    cat(paste0(length(getPScreen(object)), " screening hypothesis p-values \n"))
-    cat(paste0(
+    cat(paste0("- ", length(getPScreen(object)), " screening hypothesis p-values \n"))
+    cat(paste0("- ",
       ncol(getPConfirmation(object)),
       " confirmation hypothesis for ",
       nrow(getPConfirmation(object)),
@@ -44,16 +44,16 @@ setMethod("show", "stageRTx", function(object){
     ))
   }
   if (isAdjusted(object)) {
-    cat(paste0(length(getPScreen(object)), " screening hypothesis p-values \n"))
-    cat(paste0(
+    cat("- ",paste0(length(getPScreen(object)), " screening hypothesis p-values \n"))
+    cat(paste0("- ",
       ncol(getPConfirmation(object)),
-      " confirmation hypothesis for",
+      " confirmation hypothesis for ",
       nrow(getPConfirmation(object)),
       " transcripts \n"
     ))
     cat(
       paste0(
-        "adjusted p-values on a ",
+        "- adjusted p-values on a ",
         getAlpha(object) * 100,
         "% OFDR level with the following FWER correction method: ",
         getMethod(object),
