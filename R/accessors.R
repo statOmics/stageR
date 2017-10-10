@@ -60,27 +60,6 @@
         pAdjConfirmation[genesStageI[k],] <- rowBack
     }
 
-    # pAdjConfirmation[genesStageI,] <- t(sapply(1:length(which(genesStageI)), function(i){
-    #   row <- pConfirmation[which(genesStageI)[i],]
-    #   # Holm correction conditional on passing the screening stage.
-    #   o <- order(row)
-    #   if(all(!is.na(row))){ #if no NA's, standard Holm with screening stage correction
-    #     n <- length(row)
-    #   } else { #if NA's present, only correct for non NA p-values
-    #     n <- length(row[!is.na(row)])
-    #   }
-    #   # Holm adjustment: passing screening stage implies 1 false hypothesis
-    #   adjustment <- c(n-1,(n-1):1)
-    #   if(length(adjustment)!=length(row)) adjustment <- c(adjustment,
-    #                                                      rep(1,length(row)-length(adjustment)))
-    #   rowAdjusted <- row[o]*adjustment
-    #   rowAdjusted <- pmin(rowAdjusted,1)
-    #   rowAdjusted <- cummax(rowAdjusted)
-    #   rowBack <- vector(length=length(row))
-    #   rowBack[o] <- rowAdjusted
-    #   rowBack
-    # }))
-
   } else if(method=="user"){
     if(length(adjustment)!=ncol(pConfirmation))
       stop("the length of the adjustment vector is not equal to the number of confirmation hypotheses as defined by the number of columns in pConfirmation.")
@@ -99,17 +78,6 @@
         rowBack
       pAdjConfirmation[genesStageI[k],] <- rowBack
     }
-    # pAdjConfirmation[genesStageI,] <- t(sapply(1:length(which(genesStageI)), function(i){
-    #   row <- pConfirmation[which(genesStageI)[i],]
-    #   o <- order(row)
-    #   rowAdjusted <- row[o]*adjustment
-    #   rowAdjusted <- pmin(rowAdjusted,1)
-    #   # check monotone increase of adjusted p-values
-    #   rowAdjusted <- cummax(rowAdjusted)
-    #   rowBack <- vector(length=length(row))
-    #   rowBack[o] <- rowAdjusted
-    #   rowBack
-    # }))
 
   } else if(method=="dte"){
 

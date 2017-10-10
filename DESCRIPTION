@@ -27,4 +27,5 @@ Suggests:
     limma,
     DEXSeq
 VignetteBuilder: knitr
-Imports: methods
+Imports: methods,
+	  stats
