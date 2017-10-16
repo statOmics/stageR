@@ -20,8 +20,10 @@
 #setMethod("stageR", signature=signature(pScreen="numeric", pConfirmation="matrix"),
 #         definition=function(pScreen, pConfirmation, pScreenAdjusted=FALSE){
 stageR <- function(pScreen, pConfirmation, pScreenAdjusted=FALSE){
-  if(length(pScreen)!=nrow(pConfirmation)) stop("The number of screening hypothesis p-values must be equal to the number of rows in pConfirmation.")
-  if(!identical(as.character(names(pScreen)),as.character(rownames(pConfirmation)))) warning("The features (names) in pScreen are not identical to the features (rownames) in pConfirmation.")
+  if(length(pScreen)!=nrow(pConfirmation))
+    stop("The number of screening hypothesis p-values must be equal to the number of rows in pConfirmation.")
+  if(!identical(as.character(names(pScreen)),as.character(rownames(pConfirmation))))
+    warning("The features (names) in pScreen are not identical to the features (rownames) in pConfirmation.")
   stageR <- new("stageR")
   stageR@pScreen <- pScreen
   stageR@pConfirmation <- pConfirmation
@@ -51,8 +53,10 @@ stageR <- function(pScreen, pConfirmation, pScreenAdjusted=FALSE){
 #' @rdname stageRTx
 #' @export
 stageRTx <- function(pScreen, pConfirmation, pScreenAdjusted=FALSE, tx2gene){
-  if(any(is.na(match(rownames(pConfirmation),tx2gene[,1])))) stop("not all transcript names in pConfirmation match with a transcript ID from the tx2gene object.")
-  if(any(is.na(match(names(pScreen),tx2gene[,2])))) stop("not all gene names in pScreen match with a gene ID from the tx2gene object.")
+  if(any(is.na(match(rownames(pConfirmation),tx2gene[,1]))))
+    stop("not all transcript names in pConfirmation match with a transcript ID from the tx2gene object.")
+  if(any(is.na(match(names(pScreen),tx2gene[,2]))))
+    stop("not all gene names in pScreen match with a gene ID from the tx2gene object.")
   stageR <- new("stageRTx")
   stageR@pScreen <- pScreen
   stageR@pConfirmation <- pConfirmation
@@ -63,20 +67,26 @@ stageRTx <- function(pScreen, pConfirmation, pScreenAdjusted=FALSE, tx2gene){
 }
 
 setValidity("stageR",function(object){
-  if(length(pScreen)!=nrow(pConfirmation)) message("The number of screening hypothesis p-values must be equal to the number of rows in pConfirmation.")
+  if(length(pScreen)!=nrow(pConfirmation))
+    message("The number of screening hypothesis p-values must be equal to the number of rows in pConfirmation.")
 
-  if(!identical(as.character(names(pScreen)),as.character(rownames(pConfirmation)))) message("The features (names) in pScreen are not identical to the features (rownames) in pConfirmation.")
+  if(!identical(as.character(names(pScreen)),as.character(rownames(pConfirmation))))
+    message("The features (names) in pScreen are not identical to the features (rownames) in pConfirmation.")
 
-  if(any(is.na(getPConfirmation(object)))) message("NA confirmation stage p-values are not allowed.")
+  if(any(is.na(getPConfirmation(object))))
+    message("NA confirmation stage p-values are not allowed.")
 
 })
 
 setValidity("stageRTx",function(object){
-  if(any(is.na(match(rownames(pConfirmation),tx2gene[,1])))) message("not all transcript names in pConfirmation match with a transcript ID from the tx2gene object.")
+  if(any(is.na(match(rownames(pConfirmation),tx2gene[,1]))))
+    message("not all transcript names in pConfirmation match with a transcript ID from the tx2gene object.")
 
-  if(any(is.na(match(names(pScreen),tx2gene[,2])))) message("not all gene names in pScreen match with a gene ID from the tx2gene object.")
+  if(any(is.na(match(names(pScreen),tx2gene[,2]))))
+    message("not all gene names in pScreen match with a gene ID from the tx2gene object.")
 
-  if(any(is.na(getPConfirmation(object)))) message("NA confirmation stage p-values are not allowed.")
+  if(any(is.na(getPConfirmation(object))))
+    message("NA confirmation stage p-values are not allowed.")
 
 })
 
