@@ -1,7 +1,7 @@
 Package: stageR
 Type: Package
 Title: stageR: stage-wise analysis of high throughput gene expression data in R
-Version: 1.0.0
+Version: 1.1.0
 Author: Koen Van den Berge
 Maintainer: Koen Van den Berge <koen.vdberge@gmail.com>
 Description: The stageR package allows automated stage-wise analysis of high-throughput gene expression data. The method is published in Genome Biology at https://genomebiology.biomedcentral.com/articles/10.1186/s13059-017-1277-0
