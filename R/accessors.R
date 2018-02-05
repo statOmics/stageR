@@ -68,7 +68,7 @@
         rowAdjusted <- cummax(rowAdjusted)
         rowBack <- vector(length=length(row))
         rowBack[o] <- rowAdjusted
-        pAdjConfirmation[genesStageI[k],] <- rowBack
+        pAdjConfirmation[which(genesStageI)[k],] <- rowBack
     }
 
   } else if(method=="user"){
