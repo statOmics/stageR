@@ -49,7 +49,7 @@
                                dimnames=list(c(rownames(pConfirmation)),
                                              colnames(pConfirmation)))
 
-    for(k in seq_len(which(genesStageI))){
+    for(k in seq_len(sum(genesStageI))){
         row <- pConfirmation[which(genesStageI)[k],]
         # Holm correction conditional on passing the screening stage.
         o <- order(row)
@@ -82,7 +82,7 @@
                                ncol=ncol(pConfirmation),
                                dimnames=list(c(rownames(pConfirmation)),
                                              colnames(pConfirmation)))
-    for(k in seq_len(which(genesStageI))){
+    for(k in seq_len(sum(genesStageI))){
         row <- pConfirmation[which(genesStageI)[k],]
         o <- order(row)
         rowAdjusted <- row[o]*adjustment
