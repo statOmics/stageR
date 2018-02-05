@@ -9,7 +9,7 @@ stageR(pScreen, pConfirmation, pScreenAdjusted = FALSE)
 \arguments{
 \item{pScreen}{A vector of screening hypothesis p-values.}
 
-\item{pConfirmation}{A matrix of confirmation hypothesis p-values. The number of rows should be equal to the length of \code{pScreen}.}
+\item{pConfirmation}{A matrix of confirmation hypothesis p-values. When constructing a \code{\link{stageRClass}} object, the number of rows should be equal to the length of \code{pScreen}. For a \code{\link{stageRTxClass}} object, the dimensions can be different.}
 
 \item{pScreenAdjusted}{logical, indicating whether the supplied p-values for the screening hypothesis have already been adjusted for multiplicity according to the FDR.}
 

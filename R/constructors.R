@@ -5,7 +5,7 @@
 #' Constructor function for \code{\link{stageRClass}}. A stageR class is a class used for stage-wise analysis in high throughput settings.
 #' In its most basic form, it consists of a vector of p-values for the screening hypothesis and a matrix of p-values for the confirmation hypotheses.
 #' @param pScreen A vector of screening hypothesis p-values.
-#' @param pConfirmation A matrix of confirmation hypothesis p-values. The number of rows should be equal to the length of \code{pScreen}.
+#' @param pConfirmation A matrix of confirmation hypothesis p-values. When constructing a \code{\link{stageRClass}} object, the number of rows should be equal to the length of \code{pScreen}. For a \code{\link{stageRTxClass}} object, the dimensions can be different.
 #' @param pScreenAdjusted logical, indicating whether the supplied p-values for the screening hypothesis have already been adjusted for multiplicity according to the FDR.
 #' @param ... Additional arguments.
 #' @return An instance of an object of the \code{\link{stageRClass}}

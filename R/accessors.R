@@ -123,7 +123,7 @@
       rowBack[o] <- rowAdjusted
       names(rowBack) <- names(row)
       rowBack
-    })
+    }, simplify=FALSE)
     pAdjConfirmation <- matrix(nrow=nrow(pConfirmation),ncol=1)
     rownames(pAdjConfirmation) <- paste0(geneForEachTx,".",rownames(pConfirmation))
     # adjusted p-values for screening hypothesis
@@ -159,7 +159,7 @@
       rowBack[o] <- rowAdjusted
       names(rowBack) <- names(row)
       rowBack
-    })
+    }, simplify=FALSE)
     pAdjConfirmation <- matrix(nrow=nrow(pConfirmation),ncol=1)
     rownames(pAdjConfirmation) <- paste0(geneForEachTx,".",
                                          rownames(pConfirmation))

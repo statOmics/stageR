@@ -9,7 +9,7 @@ License: GNU General Public License version 3
 LazyData: TRUE
 biocViews: Software, StatisticalMethod
 Depends: R (>= 3.4), SummarizedExperiment
-Collate: 
+Collate:
     'stageRClasses.R'
     'allGenerics.R'
     'constructors.R'
@@ -25,7 +25,8 @@ Suggests:
     Biobase,
     edgeR,
     limma,
-    DEXSeq
+    DEXSeq,
+    testthat
 VignetteBuilder: knitr
 Imports: methods,
 	  stats
