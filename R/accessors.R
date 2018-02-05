@@ -92,7 +92,7 @@
         rowBack <- vector(length=length(row))
         rowBack[o] <- rowAdjusted
         rowBack
-      pAdjConfirmation[genesStageI[k],] <- rowBack
+      pAdjConfirmation[which(genesStageI)[k],] <- rowBack
     }
 
   } else if(method=="dte"){
