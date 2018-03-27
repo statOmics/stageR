@@ -9,7 +9,8 @@
 #' @param pScreenAdjusted logical, indicating whether the supplied p-values for the screening hypothesis have already been adjusted for multiplicity according to the FDR.
 #' @param ... Additional arguments.
 #' @return An instance of an object of the \code{\link{stageRClass}}
-#' @references Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. Submitted.
+#' @references
+#' Van den Berge K., Soneson C., Robinson M.D., Clement L. (2017). stageR: a general stage-wise method for controlling the gene-level false discovery rate in differential expression and differential transcript usage. Genome Biology 18:151. https://doi.org/10.1186/s13059-017-1277-0
 #' @examples
 #' # create a \code{\link{stageRClass}} object
 #' stageRObj <- stageR(pScreen=runif(10), pConfirmation=matrix(runif(30),nrow=10,ncol=3))
@@ -43,7 +44,8 @@ stageR <- function(pScreen, pConfirmation, pScreenAdjusted=FALSE){
 #' @param tx2gene Only applicable for transcript-level analysis. A \code{\link[base]{data.frame}} with transcript IDs in the first columns and gene IDs in the second column. The rownames from \code{pConfirmation} must be contained in the transcript IDs from \code{tx2gene}, and the names from \code{pScreen} must be contained in the gene IDs.
 #' @param ... Additional arguments.
 #' @return An instance of an object of the \code{\link{stageRTxClass}}
-#' @references Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. Submitted.
+#' @references
+#' Van den Berge K., Soneson C., Robinson M.D., Clement L. (2017). stageR: a general stage-wise method for controlling the gene-level false discovery rate in differential expression and differential transcript usage. Genome Biology 18:151. https://doi.org/10.1186/s13059-017-1277-0
 #' @examples
 #' # create a stageRClass object
 #' stageRObj <- stageR(pScreen=runif(10), pConfirmation=matrix(runif(30),nrow=10,ncol=3))

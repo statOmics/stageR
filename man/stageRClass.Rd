@@ -30,7 +30,7 @@ This class is used for adjusting p-values with stage-wise testing for high-throu
 }}
 
 \references{
-Van den Berge K., Soneson C., Robinson M.D., Clement L. "A general and powerful stage-wise testing procedure for differential expression and differential transcript usage." \url{http://biorxiv.org/content/early/2017/02/16/109082}
+Van den Berge K., Soneson C., Robinson M.D., Clement L. (2017). stageR: a general stage-wise method for controlling the gene-level false discovery rate in differential expression and differential transcript usage. Genome Biology 18:151. https://doi.org/10.1186/s13059-017-1277-0
 R. Heller, E. Manduchi, G. R. Grant, and W. J. Ewens, "A flexible two-stage procedure for identifying gene sets that are differentially expressed." Bioinformatics (Oxford, England), vol. 25, pp. 1019-25, 2009.
 S. Holm, "A Simple Sequentially Rejective Multiple Test Procedure," Scandinavian Journal of Statistics, vol. 6, no. 2, pp. 65-70, 1979.
 J. P. Shaffer, "Modified Sequentially Rejective Multiple Test Procedures," Journal of the American Statistical Association, vol. 81, p. 826, 1986.

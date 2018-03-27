@@ -28,5 +28,5 @@ stageRObj <- stageR(pScreen=runif(10), pConfirmation=matrix(runif(30),nrow=10,nc
 stageRObj <- stageRTx(pScreen=runif(10), pConfirmation=matrix(runif(30),nrow=10,ncol=3), tx2gene=data.frame(transcripts=paste0("transcript",1:10),genes=paste0("gene",rep(1:2,each=5))))
 }
 \references{
-Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. Submitted.
+Van den Berge K., Soneson C., Robinson M.D., Clement L. (2017). stageR: a general stage-wise method for controlling the gene-level false discovery rate in differential expression and differential transcript usage. Genome Biology 18:151. https://doi.org/10.1186/s13059-017-1277-0
 }

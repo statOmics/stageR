@@ -314,11 +314,11 @@
 #' @param alpha the OFDR on which to control the two-stage analysis.
 #' @param tx2gene Only applicable when  \code{method} is \code{"dte"} or \code{"dtu"}.  A \code{\link[base]{data.frame}} with transcript IDs in the first columns and gene IDs in the second column. The rownames from \code{pConfirmation} must be contained in the transcript IDs from \code{tx2gene}, and the names from \code{pScreen} must be contained in the gene IDs.
 #' @param adjustment a user-defined adjustment of the confirmation stage p-values. Only applicable when \code{method} is \code{"user"} and ignored otherwise.
-#' @param ... Additional arguments passed to \code{stageWiseTest}
+#' @param ... Additional arguments passed to \code{.stageWiseTest}
 #' @return
 #' A stageR/stageRTx object with stage-wise adjusted p-values.
 #' @references
-#' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. \url{http://biorxiv.org/content/early/2017/02/16/109082}
+#' Van den Berge K., Soneson C., Robinson M.D., Clement L. (2017). stageR: a general stage-wise method for controlling the gene-level false discovery rate in differential expression and differential transcript usage. Genome Biology 18:151. https://doi.org/10.1186/s13059-017-1277-0
 #' R. Heller, E. Manduchi, G. R. Grant, and W. J. Ewens, "A flexible two-stage procedure for identifying gene sets that are differentially expressed." Bioinformatics (Oxford, England), vol. 25, pp. 1019-25, 2009.
 #'
 #' S. Holm, "A Simple Sequentially Rejective Multiple Test Procedure," Scandinavian Journal of Statistics, vol. 6, no. 2, pp. 65-70, 1979.
@@ -331,9 +331,9 @@
 #' stageRObj <- stageR(pScreen=pScreen, pConfirmation=pConfirmation)
 #' stageRObj <- stageWiseAdjustment(stageRObj, method="holm", alpha=0.05)
 #' getAdjustedPValues(stageRObj, onlySignificantGenes=TRUE, order=TRUE)
-#'# @name stageWiseAdjustment
-#'# @rdname stageWiseAdjustment
-#' @describeIn stageWiseAdjustment Adjust p-values in a two-stage analysis
+#' @name stageWiseAdjustment
+#' @rdname stageWiseAdjustment
+#' @aliases stageWiseAdjustment stageWiseAdjustment,stageR stageWiseAdjustment,stageRTx
 #' @export
 setMethod("stageWiseAdjustment",signature=signature(object="stageR",
                                                     method="character",
@@ -401,9 +401,9 @@ setMethod(
 #' dimnames(pConfirmation)=list(paste0("gene",1:300),c("H1","H2","H3"))
 #' stageRObj <- stageR(pScreen=pScreen, pConfirmation=pConfirmation)
 #' getPScreen(stageRObj)
-#'# @name getPScreen
-#'# @rdname getPScreen
-#' @describeIn getPScreen Return screening hypothesis p-values from a \code{\link{stageRClass}} object.
+#' @name getPScreen
+#' @rdname getPScreen
+#' @aliases getPScreen getPScreen,stageR getPScreen,stageRTx
 #' @export
 setMethod("getPScreen",signature=signature(object="stageR"),
           definition=function(object){return(object@pScreen)})
@@ -423,9 +423,9 @@ setMethod("getPScreen",signature=signature(object="stageRTx"),
 #' dimnames(pConfirmation)=list(paste0("gene",1:300),c("H1","H2","H3"))
 #' stageRObj <- stageR(pScreen=pScreen, pConfirmation=pConfirmation)
 #' getPConfirmation(stageRObj)
-#'# @name getPConfirmation
-#'# @rdname getPConfirmation
-#' @describeIn getPConfirmation Return unadjusted confirmation hypothesis p-values from a \code{\link{stageRClass}} object.
+#' @aliases getPConfirmation getPConfirmation,stageR getPConfirmation,stageRTx
+#' @name getPConfirmation
+#' @rdname getPConfirmation
 #' @export
 setMethod("getPConfirmation",signature=signature(object="stageR"),
           definition=function(object){return(object@pConfirmation)})
@@ -456,11 +456,11 @@ setMethod("getPConfirmation",signature=signature(object="stageRTx"),
 #' stageRObj <- stageWiseAdjustment(stageRObj, method="holm", alpha=0.05)
 #' head(getAdjustedPValues(stageRObj, onlySignificantGenes=TRUE, order=TRUE))
 #' @references
-#' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
+#' Van den Berge K., Soneson C., Robinson M.D., Clement L. (2017). stageR: a general stage-wise method for controlling the gene-level false discovery rate in differential expression and differential transcript usage. Genome Biology 18:151. https://doi.org/10.1186/s13059-017-1277-0
 #'
-#'# @name getAdjustedPValues
-#'# @rdname getAdjustedPValues
-#' @describeIn getAdjustedPValues Retrieve the stage-wise adjusted p-values.
+#' @name getAdjustedPValues
+#' @rdname getAdjustedPValues
+#' @aliases getAdjustedPValues getAdjustedPValues,stageR getAdjustedPValues,stageRTx
 #' @export
 setMethod("getAdjustedPValues",
           signature=signature(object="stageR",
@@ -501,15 +501,15 @@ setMethod("getAdjustedPValues",
 #' adjustedAlphaLevel(stageRObj)
 #'# @method stageR-method
 #' @references
-#' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. \url{http://biorxiv.org/content/early/2017/02/16/109082}
+#' Van den Berge K., Soneson C., Robinson M.D., Clement L. (2017). stageR: a general stage-wise method for controlling the gene-level false discovery rate in differential expression and differential transcript usage. Genome Biology 18:151. https://doi.org/10.1186/s13059-017-1277-0
 #'
 #' R. Heller, E. Manduchi, G. R. Grant, and W. J. Ewens, "A flexible two-stage procedure for identifying gene sets that are differentially expressed." Bioinformatics (Oxford, England), vol. 25, pp. 1019-25, 2009.
 #'
 #' @seealso \code{\link{stageR}}, \code{\link{stageRClass}}
-#'# @name adjustedAlphaLevel
-#'# @rdname adjustedAlphaLevel
+#' @name adjustedAlphaLevel
+#' @rdname adjustedAlphaLevel
+#' @aliases adjustedAlphaLevel adjustedAlphaLevel,stageR adjustedAlphaLevel,stageRTx
 #' @export
-#' @describeIn adjustedAlphaLevel Get adjusted significance level from the screening stage.
 setMethod("adjustedAlphaLevel",signature=signature(object="stageR"),
           definition=function(object){
             if(!isAdjusted(object)){
@@ -542,11 +542,11 @@ setMethod("adjustedAlphaLevel",signature=signature(object="stageRTx"),
 #' stageRObj <- stageWiseAdjustment(stageRObj, method="holm", alpha=0.05)
 #' head(getResults(stageRObj))
 #' @references
-#' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
+#' Van den Berge K., Soneson C., Robinson M.D., Clement L. (2017). stageR: a general stage-wise method for controlling the gene-level false discovery rate in differential expression and differential transcript usage. Genome Biology 18:151. https://doi.org/10.1186/s13059-017-1277-0
 #'
-#'# @name getResults
-#'# @rdname getResults
-#' @describeIn getResults Get significance results according to a stage-wise analysis.
+#' @name getResults
+#' @rdname getResults
+#' @aliases getResults getResults,stageR getResults,stageRTx
 #' @export
 setMethod("getResults",signature=signature(object="stageR"),
           definition=function(object){
@@ -578,11 +578,11 @@ setMethod("getResults",signature=signature(object="stageR"),
 #' stageRObj <- stageWiseAdjustment(stageRObj, method="dte", alpha=0.05)
 #' head(getSignificantGenes(stageRObj))
 #' @references
-#' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
+#' Van den Berge K., Soneson C., Robinson M.D., Clement L. (2017). stageR: a general stage-wise method for controlling the gene-level false discovery rate in differential expression and differential transcript usage. Genome Biology 18:151. https://doi.org/10.1186/s13059-017-1277-0
 #'
-#'# @name getSignificantGenes
-#'# @rdname getSignificantGenes
-#' @describeIn getSignificantGenes Return significant genes when performing transcript level analysis.
+#' @name getSignificantGenes
+#' @rdname getSignificantGenes
+#' @aliases getSignificantGenes getSignificantGenes,stageRTx
 #' @export
 setMethod("getSignificantGenes",signature=signature(object="stageRTx"),
           definition=function(object){
@@ -615,7 +615,7 @@ setMethod("getSignificantGenes",signature=signature(object="stageRTx"),
 #' @return
 #' A matrix of significant transcripts with their corresponding stage-wise adjusted p-value (i.e. FDR and FWER correction).
 #' @references
-#' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. Submitted.
+#' Van den Berge K., Soneson C., Robinson M.D., Clement L. (2017). stageR: a general stage-wise method for controlling the gene-level false discovery rate in differential expression and differential transcript usage. Genome Biology 18:151. https://doi.org/10.1186/s13059-017-1277-0
 #' @examples
 #' #make identifiers linking transcripts to genes
 #' set.seed(1)
@@ -631,9 +631,9 @@ setMethod("getSignificantGenes",signature=signature(object="stageRTx"),
 #' stageRObj <- stageRTx(pScreen=pScreen, pConfirmation=pConfirmation ,pScreenAdjusted=TRUE, tx2gene=tx2gene)
 #' stageRObj <- stageWiseAdjustment(stageRObj, method="dte", alpha=0.05)
 #' head(getSignificantTx(stageRObj))
-#'# @name getSignificantTx
-#'# @rdname getSignificantTx
-#' @describeIn getSignificantTx Return significant transcripts when performing transcript-level analysis.
+#' @name getSignificantTx
+#' @rdname getSignificantTx
+#' @aliases getSignificantTx getSignificantTx,stageR getSignificantTx,stageRTx
 #' @export
 setMethod("getSignificantTx",signature=signature(object="stageRTx"),
           definition=function(object){
@@ -671,11 +671,11 @@ setMethod("getSignificantTx",signature=signature(object="stageRTx"),
 #' stageRObj <- stageWiseAdjustment(stageRObj, method="holm", alpha=0.05)
 #' getAlpha(stageRObj)
 #' @references
-#' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
+#' Van den Berge K., Soneson C., Robinson M.D., Clement L. (2017). stageR: a general stage-wise method for controlling the gene-level false discovery rate in differential expression and differential transcript usage. Genome Biology 18:151. https://doi.org/10.1186/s13059-017-1277-0
 #'
-#'# @name getAlpha
-#'# @rdname getAlpha
-#' @describeIn getAlpha Retrieve the significance level for the stage-wise adjustment.
+#' @name getAlpha
+#' @rdname getAlpha
+#' @aliases getAlpha getAlpha,stageR getAlpha,stageRTx
 #' @export
 setMethod("getAlpha",signature=signature(object="stageR"),
           definition=function(object, ...){
@@ -716,11 +716,11 @@ setMethod("getAlpha",signature=signature(object="stageRTx"),
 #' stageRObj <- stageRTx(pScreen=pScreen, pConfirmation=pConfirmation ,pScreenAdjusted=TRUE, tx2gene=tx2gene)
 #' getTx2gene(stageRObj)
 #' @references
-#' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
+#' Van den Berge K., Soneson C., Robinson M.D., Clement L. (2017). stageR: a general stage-wise method for controlling the gene-level false discovery rate in differential expression and differential transcript usage. Genome Biology 18:151. https://doi.org/10.1186/s13059-017-1277-0
 #'
-#'# @name getTx2gene
-#'# @rdname getTx2gene
-#' @describeIn getTx2gene Retrieve the data frame linking genes to transcripts.
+#' @name getTx2gene
+#' @rdname getTx2gene
+#' @aliases getTx2gene getTx2gene,stageRTx
 #' @export
 setMethod("getTx2gene",signature=signature(object="stageRTx"),
           definition=function(object, ...){
@@ -743,11 +743,11 @@ setMethod("getTx2gene",signature=signature(object="stageRTx"),
 #' stageRObj <- stageR(pScreen=pScreen, pConfirmation=pConfirmation)
 #' isPScreenAdjusted(stageRObj)
 #' @references
-#' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
+#' Van den Berge K., Soneson C., Robinson M.D., Clement L. (2017). stageR: a general stage-wise method for controlling the gene-level false discovery rate in differential expression and differential transcript usage. Genome Biology 18:151. https://doi.org/10.1186/s13059-017-1277-0
 #'
-#'# @name isPScreenAdjusted
-#'# @rdname isPScreenAdjusted
-#' @describeIn isPScreenAdjusted Are the screening p-values adjusted for multiplicity?
+#' @name isPScreenAdjusted
+#' @rdname isPScreenAdjusted
+#' @aliases isPScreenAdjusted isPScreenAdjusted,stageR isPSCreenAdjusted,stageRTx
 #' @export
 setMethod("isPScreenAdjusted",signature=signature(object="stageR"),
           definition=function(object, ...){
@@ -777,11 +777,11 @@ setMethod("isPScreenAdjusted",signature=signature(object="stageRTx"),
 #' stageRObj <- stageWiseAdjustment(stageRObj, method="holm", alpha=0.05)
 #' isAdjusted(stageRObj)
 #' @references
-#' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
+#' Van den Berge K., Soneson C., Robinson M.D., Clement L. (2017). stageR: a general stage-wise method for controlling the gene-level false discovery rate in differential expression and differential transcript usage. Genome Biology 18:151. https://doi.org/10.1186/s13059-017-1277-0
 #'
-#'# @name isAdjusted
-#'# @rdname isAdjusted
-#' @describeIn isAdjusted Has stage-wise adjustment already been performed on the object?
+#' @name isAdjusted
+#' @rdname isAdjusted
+#' @aliases isAdjusted isAdjusted,stageR isAdjusted,stageRTx
 #' @export
 setMethod("isAdjusted",signature=signature(object="stageR"),
           definition=function(object, ...){
@@ -810,11 +810,11 @@ setMethod("isAdjusted",signature=signature(object="stageRTx"),
 #' stageRObj <- stageWiseAdjustment(stageRObj, method="holm", alpha=0.05)
 #' getMethod(stageRObj)
 #' @references
-#' Van den Berge K., Soneson C., Robinson M.D., Clement L. 2017. A general and powerful stage-wise testing procedure for differential expression and differential transcript usage. http://biorxiv.org/content/early/2017/02/16/109082
+#' Van den Berge K., Soneson C., Robinson M.D., Clement L. (2017). stageR: a general stage-wise method for controlling the gene-level false discovery rate in differential expression and differential transcript usage. Genome Biology 18:151. https://doi.org/10.1186/s13059-017-1277-0
 #'
-#'# @name getMethod
-#'# @rdname getMethod
-#' @describeIn getMethod Retrieve FWER correction method.
+#' @name getMethod
+#' @rdname getMethod
+#' @aliases getMethod getMethod,stageR getMethod,stageRTx
 #' @export
 setMethod("getMethod",signature=signature(object="stageR"),
           definition=function(object, ...){
