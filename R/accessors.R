@@ -469,7 +469,7 @@ setMethod("getAdjustedPValues",
           definition=function(object, onlySignificantGenes, order, ...){
             if(!isAdjusted(object)){
               stop("adjust p-values first using stageWiseAdjustment")}
-            return(.getAdjustedP(object=object, ...))
+            return(.getAdjustedP(object=object, onlySignificantGenes, order, ...))
           })
 #' @describeIn getAdjustedPValues Retrieve the stage-wise adjusted p-values.
 setMethod("getAdjustedPValues",
@@ -479,7 +479,7 @@ setMethod("getAdjustedPValues",
           definition=function(object, onlySignificantGenes, order, ...){
             if(!isAdjusted(object)){
               stop("adjust p-values first using stageWiseAdjustment")}
-            return(.getAdjustedPTx(object=object, ...))
+            return(.getAdjustedPTx(object=object, onlySignificantGenes, order, ...))
           })
 
 #' Get adjusted significance level from the screening stage.
