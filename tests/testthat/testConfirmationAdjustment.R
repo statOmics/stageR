@@ -63,11 +63,13 @@ stageRTxObj = stageRTx(pScreen=pScreen, pConfirmation=pTx, tx2gene=tx2gene)
 #gene1
 gene1P = pTx[1:4,]
 o=order(gene1P)
-gene1PAdj = cummax(pmin(gene1P[o]*c(3,3,2,1),1))
+gene1PAdj <- vector(length=length(gene1P))
+gene1PAdj[o] = cummax(pmin(gene1P[o]*c(3,3,2,1),1))
 #gene2
 gene2P = pTx[5:8,]
 o=order(gene2P)
-gene2PAdj = cummax(pmin(gene2P[o]*c(3,3,2,1),1))
+gene2PAdj <- vector(length=length(gene2P))
+gene2PAdj[o] = cummax(pmin(gene2P[o]*c(3,3,2,1),1))
 #others
 geneOthers=rep(0,7)
 allAdjP=unname(c(gene1PAdj, gene2PAdj, geneOthers))
