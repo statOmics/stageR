@@ -5,12 +5,9 @@ date: "`r Sys.Date()`"
 bibliography: stageR.bib
 output: 
 BiocStyle::html_document
-vignette: >
-  %\VignetteIndexEntry{stageR}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
-  ---
-  
+---
+
+
   This vignette describes how to use the stageR package that has been developed for stage-wise analysis of high throughput gene expression data in R. A stage-wise analysis was shown to be beneficial in terms of biological interpretation and statistical performance when multiple hypotheses per gene are of interest.
   The stage-wise analysis has been adopted from [@Heller2009] and consists of a screening stage and a confirmation stage. In the screening stage, genes are screened by calculating p-values that aggregate evidence across the different hypotheses of interest for the gene. The screening p-values are then adjusted for FDR control after which significance of the screening hypothesis is assessed.
   In the confirmation stage, only genes passing the screening stage are considered for analysis. For those genes, every hypothesis of interest is assessed separately and multiple testing correction is performed across hypotheses within a gene to control the FWER on the BH-adjusted significance level of the screening stage.
