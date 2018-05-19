@@ -3,8 +3,13 @@ title: "stageR: stage-wise analysis of high-throughput gene expression data in R
 author: "Koen Van den Berge"
 date: "`r Sys.Date()`"
 bibliography: stageR.bib
-output: 
-BiocStyle::html_document
+output:
+  BiocStyle::html_document:
+    toc: true
+vignette: >
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Vignette Title}
 ---
 
 
@@ -15,7 +20,7 @@ BiocStyle::html_document
   
   The vignette analyses two datasets. The Hammer dataset [@Hammer2010] is a differential gene expression analysis for an experiment with a complex design. This type of analyses are supported by the `stageR` class. The Ren dataset [@Ren2012] analyses differential transcript usage (DTU) in tumoral versus normal tissue in Chinese patients. Transcript-level analyses are supported by the `stageRTx` class. 
   
-  # Installing and loading the package
+# Installing and loading the package
   
 The package is hosted on GitHub and can be installed with the `devtools` library using `devtools::install_github("statOmics/stageR")`.
   
