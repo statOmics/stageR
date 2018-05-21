@@ -9,7 +9,7 @@ output:
 vignette: >
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{stageR: stage-wise analysis of high-throughput gene expression data in R}
 ---
 
 
