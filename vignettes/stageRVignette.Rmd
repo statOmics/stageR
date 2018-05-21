@@ -9,7 +9,7 @@ output:
 vignette: >
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{stageR: stage-wise analysis of high-throughput gene expression data in R}
 ---
   
   This vignette describes how to use the stageR package that has been developed for stage-wise analysis of high throughput gene expression data in R. A stage-wise analysis was shown to be beneficial in terms of biological interpretation and statistical performance when multiple hypotheses per gene are of interest.
