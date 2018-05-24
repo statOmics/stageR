@@ -35,6 +35,7 @@ This functions returns the stage-wise adjusted p-values for an object from the  
 }
 \details{
 The function returns FDR adjusted p-values for the screening hypothesis and stage-wise adjusted p-values for the confirmation hypothesis p-values. For features that were not significant in the screening hypothesis, the confirmation stage adjusted p-values are set to \code{NA}.
+The adjusted p-values in the output of \code{getAdjustedPValues} can directly be compared to alpha, the OFDR level specified in \code{stageWiseAdjustment}, to flag significant features.
 }
 \section{Methods (by class)}{
 \itemize{

@@ -447,6 +447,7 @@ setMethod("getPConfirmation",signature=signature(object="stageRTx"),
 #' For transcript-level experiments (stageRTx object), a matrix of adjusted p-values where every row corresponds to a transcript.
 #' @details
 #' The function returns FDR adjusted p-values for the screening hypothesis and stage-wise adjusted p-values for the confirmation hypothesis p-values. For features that were not significant in the screening hypothesis, the confirmation stage adjusted p-values are set to \code{NA}.
+#' The adjusted p-values in the output of \code{getAdjustedPValues} can directly be compared to alpha, the OFDR level specified in \code{stageWiseAdjustment}, to flag significant features.
 #' @examples
 #' pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
 #' names(pScreen)=paste0("gene",1:300)
