@@ -153,7 +153,6 @@ stageRObj <- stageR(pScreen=pScreen, pConfirmation=pConfirmation, pScreenAdjuste
 adjustedPSW <- stageWiseAdjustment(object=stageRObj, method="user", alpha=0.05, adjustment=c(1,1,1))
 res <- getResults(adjustedPSW)
 colSums(res)
-rm("hammer_eset.RData")
 ```
 
 # Differential transcript expression/usage
@@ -238,7 +237,8 @@ Similar, the significant transcripts can be returned with `getSignificantTx`.
 head(getSignificantTx(stageRObj))
 ```
 
-The stage-wise adjusted p-values are returned using the `getAdjustedPValues` function. The screening (gene) hypothesis p-values were adjusted according to the BH FDR criterion and the confirmation (transcript) hypotheses were adjusted to control the FWER with the method specified in `stageWiseAdjustment` and are subsequently controlled according to the BH-adjusted significance level of the screening stage. Hence, the confirmation p-values returned from this function can be directly compared to the significance level `alpha` as provided in the `stageWiseAdjustment` function. `getAdjustedPValues` returns a matrix where the different rows correspond to transcripts and the respective gene and transcript identifiers are given in the first two columns. Transcript-level adjusted p-values for genes not passing the screening stage are set to `NA` by default. Note, that the stage-wise adjusted p-values are only valid for the provided significance level and must not be compared to a different significance level. If this would be of interest, the entire stage-wise testing adjustment should be re-run with the other significance level provided in `alpha`.
+
+The stage-wise adjusted p-values are returned using the `getAdjustedPValues` function. The screening (gene) hypothesis p-values were adjusted according to the BH FDR criterion, and the confirmation (transcript) hypothesis p-values were adjusted to control for the full stage-wise analysis, by adopting the correction method specified in `stageWiseAdjustment`. Hence, the confirmation adjusted p-values returned from this function can be directly compared to the significance level `alpha` as provided in the `stageWiseAdjustment` function. `getAdjustedPValues` returns a matrix where the different rows correspond to transcripts and the respective gene and transcript identifiers are given in the first two columns. Transcript-level adjusted p-values for genes not passing the screening stage are set to `NA` by default. Note, that the stage-wise adjusted p-values are only valid for the provided significance level and must not be compared to a different significance level. If this would be of interest, the entire stage-wise testing adjustment should be re-run with the other significance level provided in `alpha`.
 
 ```{r}
 padj <- getAdjustedPValues(stageRObj, order=TRUE, onlySignificantGenes=FALSE)
