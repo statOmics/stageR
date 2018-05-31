@@ -151,6 +151,7 @@
       o <- order(row)
       n <- length(row)
       # DTU adjustment: passing screening stage implies 2 false hypotheses
+      if(n==1) stop("Some genes have only one transcript; this is incompatible with DTU correction. Remove these transcripts.")
       if(n==2) adjustment=c(0,0) else adjustment=c(n-2,n-2,(n-2):1)
       rowAdjusted <- row[o]*adjustment
       rowAdjusted <- pmin(rowAdjusted,1)
