@@ -125,11 +125,14 @@
       rowBack
     }, simplify=FALSE)
     pAdjConfirmation <- matrix(nrow=nrow(pConfirmation),ncol=1)
-    rownames(pAdjConfirmation) <- paste0(geneForEachTx,".",rownames(pConfirmation))
+    rownames(pAdjConfirmation) <- paste0(geneForEachTx,":",rownames(pConfirmation))
     # adjusted p-values for screening hypothesis
     padjScreenReturn <- padjScreen[geneForEachTx]
     # adjusted p-values for confirmation hypothesis
-    pAdjConfirmation[names(unlist(txLevelAdjustments)),1] = unlist(txLevelAdjustments)
+    idCon <- names(unlist(txLevelAdjustments))
+    # replace '.' by ':' in names to avoid confusion with ENSEMBL version names
+    idCon <- gsub(x=idCon,pattern=".",replacement=":",fixed=TRUE)
+    pAdjConfirmation[idCon,1] <- unlist(txLevelAdjustments)
 
   } else if(method=="dtu"){
 
@@ -162,12 +165,14 @@
       rowBack
     }, simplify=FALSE)
     pAdjConfirmation <- matrix(nrow=nrow(pConfirmation),ncol=1)
-    rownames(pAdjConfirmation) <- paste0(geneForEachTx,".",
+    rownames(pAdjConfirmation) <- paste0(geneForEachTx,":",
                                          rownames(pConfirmation))
     # adjusted p-values for screening hypothesis
     padjScreenReturn <- padjScreen[as.character(geneForEachTx)]
     # adjusted p-values for confirmation hypothesis
     idCon <- names(unlist(txLevelAdjustments))
+    # replace '.' by ':' in names to avoid confusion with ENSEMBL version names
+    idCon <- gsub(x=idCon,pattern=".",replacement=":",fixed=TRUE)
     pAdjConfirmation[idCon,1] <- unlist(txLevelAdjustments)
 
   } else stop("method must be either one of 'holm' or ... ")
@@ -244,7 +249,7 @@
     } else {
       if(order){ #sort
         ordGenes <- order(object@adjustedP[genesStageI,1])
-        sigGeneIDs <- unlist(lapply(strsplit(names(genesStageI),split=".",
+        sigGeneIDs <- unlist(lapply(strsplit(names(genesStageI),split=":",
                                              fixed=TRUE), function(x) x[1] ))
         #order acc to gene significance
         idList <- sapply(unique(sigGeneIDs[ordGenes]), function(gene){
@@ -255,15 +260,15 @@
         outData <- object@adjustedP[unlist(idListOrdTx),]
         outData <- data.frame("geneID"=sigGeneIDs[ordGenes],
                               "txID"=unlist(lapply(strsplit(rownames(outData),
-                                    split=".",fixed=TRUE), function(x) x[2] )),
+                                    split=":",fixed=TRUE), function(x) x[2] )),
                               outData, row.names=NULL)
         return(outData)
       } else { #dont sort
         outData <- object@adjustedP[genesStageI,]
         outData <- data.frame("geneID"=unlist(lapply(strsplit(rownames(outData),
-                                    split=".",fixed=TRUE), function(x) x[1] )),
+                                    split=":",fixed=TRUE), function(x) x[1] )),
                               "txID"=unlist(lapply(strsplit(rownames(outData),
-                                    split=".",fixed=TRUE), function(x) x[2] )),
+                                    split=":",fixed=TRUE), function(x) x[2] )),
                               outData, row.names=NULL)
         return(outData)
       }
@@ -272,7 +277,7 @@
     if(order){ #sort
       ordGenes <- order(object@adjustedP[,"gene"])
       sigGeneIDs <- unlist(lapply(strsplit(rownames(object@adjustedP),
-                                           split=".",fixed=TRUE), function(x) x[1] ))
+                                           split=":",fixed=TRUE), function(x) x[1] ))
       #order acc to gene significance
       idList <- sapply(unique(sigGeneIDs[ordGenes]),
                        function(gene) which(geneForEachTx%in%gene))
@@ -281,15 +286,15 @@
       outData <- object@adjustedP[unlist(idListOrdTx),]
       outData <- data.frame("geneID"=sigGeneIDs[ordGenes],
                             "txID"=unlist(lapply(strsplit(rownames(outData),
-                                  split=".",fixed=TRUE), function(x) x[2] )),
+                                  split=":",fixed=TRUE), function(x) x[2] )),
                             outData, row.names=NULL)
       return(outData)
     } else { #dont sort
       outData <- object@adjustedP
       outData <- data.frame("geneID"=unlist(lapply(strsplit(rownames(outData),
-                            split=".",fixed=TRUE), function(x) x[1] )),
+                            split=":",fixed=TRUE), function(x) x[1] )),
                             "txID"=unlist(lapply(strsplit(rownames(outData),
-                            split=".",fixed=TRUE), function(x) x[2] )),
+                            split=":",fixed=TRUE), function(x) x[2] )),
                             outData, row.names=NULL)
       return(outData)
     }
