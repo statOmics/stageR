@@ -192,12 +192,12 @@
 .getAdjustedP <- function(object, onlySignificantGenes=FALSE, order=TRUE){
   ## this function is used in getAdjustedPValues
   ## to return the adjusted p-values for a stageR class.
-  warning(paste0("The returned adjusted p-values are based on a
-                 stage-wise testing approach and are only valid for
-                 the provided target OFDR level of ",
+  message(paste0("The returned adjusted p-values are based on a",
+                 "stage-wise testing approach and are only valid for",
+                 "the provided target OFDR level of ",
                  getAlpha(object)*100,
-                 "%. If a different target OFDR level is of interest,
-                 the entire adjustment should be re-run. \n"), call.=FALSE)
+                 "%. If a different target OFDR level is of interest,",
+                 "the entire adjustment should be re-run. \n"))
   if(onlySignificantGenes){ #significant genes
     genesStageI <- object@adjustedP[,"padjScreen"]<=getAlpha(object)
     if(sum(genesStageI)==0){
@@ -226,12 +226,12 @@
 .getAdjustedPTx <- function(object, onlySignificantGenes=FALSE, order=TRUE){
   ## this function is used in getAdjustedPValues
   ## to return the adjusted p-values for a stageRTx class.
-  warning(paste0("The returned adjusted p-values are based on a
-                 stage-wise testing approach and are only valid for
-                 the provided target OFDR level of ",
+  message(paste0("The returned adjusted p-values are based on a",
+                 "stage-wise testing approach and are only valid for",
+                 "the provided target OFDR level of ",
                  getAlpha(object)*100,
-                 "%. If a different target OFDR level is of interest,
-                 the entire adjustment should be re-run. \n"), call.=FALSE)
+                 "%. If a different target OFDR level is of interest,",
+                 "the entire adjustment should be re-run. \n"))
   tx2gene <- getTx2gene(object)
   pConfirmation <- getPConfirmation(object)
   geneForEachTx <- tx2gene[match(rownames(pConfirmation),tx2gene[,1]),2]
