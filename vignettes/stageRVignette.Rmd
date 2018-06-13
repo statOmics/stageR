@@ -1,6 +1,6 @@
 ---
 title: "stageR: stage-wise analysis of high-throughput gene expression data in R"
-author: "Koen Van den Berge"
+author: "Koen Van den Berge and Lieven Clement"
 date: "`r Sys.Date()`"
 bibliography: stageR.bib
 output:
