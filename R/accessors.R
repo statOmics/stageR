@@ -1,7 +1,7 @@
 #' @include stageRClasses.R allGenerics.R constructors.R
 
 .createGeneTibble <- function(pScreen, pConfirmation, tx2gene=NULL){
-  require(tidyverse)
+  require(tidyverse) ; require(reshape2)
 
   if(is.null(tx2gene)){
     df <- data.frame(geneID=names(pScreen), pConfirmation)
