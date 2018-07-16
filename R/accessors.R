@@ -197,8 +197,8 @@
 .getAdjustedP <- function(object, onlySignificantGenes=FALSE, order=TRUE){
   ## this function is used in getAdjustedPValues
   ## to return the adjusted p-values for a stageR class.
-  message(paste0("The returned adjusted p-values are based on a",
-                 "stage-wise testing approach and are only valid for",
+  message(paste0("The returned adjusted p-values are based on a ",
+                 "stage-wise testing approach and are only valid for ",
                  "the provided target OFDR level of ",
                  getAlpha(object)*100,
                  "%. If a different target OFDR level is of interest,",
@@ -231,8 +231,8 @@
 .getAdjustedPTx <- function(object, onlySignificantGenes=FALSE, order=TRUE){
   ## this function is used in getAdjustedPValues
   ## to return the adjusted p-values for a stageRTx class.
-  message(paste0("The returned adjusted p-values are based on a",
-                 "stage-wise testing approach and are only valid for",
+  message(paste0("The returned adjusted p-values are based on a ",
+                 "stage-wise testing approach and are only valid for ",
                  "the provided target OFDR level of ",
                  getAlpha(object)*100,
                  "%. If a different target OFDR level is of interest,",
