@@ -4,8 +4,11 @@
   require(tidyverse)
 
   if(is.null(tx2gene)){
-    df <- data.frame(geneID=names(pScreen), genePval=pScreen, pConfirmation)
+    df <- data.frame(geneID=names(pScreen), pConfirmation)
+    # convert to long format
+    df <- melt(df, id.vars="geneID", variable.name="hypothesis", value.name="pvalue")
     nestedDf <- df %>% group_by(geneID) %>% nest()
+    nestedDf$genePval <- pScreen[as.character(nestedDf$geneID)]
     return(nestedDf)
   } else { #transcript data
     df <- data.frame(txID=tx2gene[,1], geneID=tx2gene[,2], txPval=pConfirmation[tx2gene[,1],])
