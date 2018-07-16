@@ -1,5 +1,14 @@
 #' @include stageRClasses.R allGenerics.R constructors.R
 
+.createGeneTibble <- function(pScreen, pConfirmation, tx2gene=NULL){
+  require(tidyverse)
+
+  df <- data.frame(txID=tx2gene[,1], geneID=tx2gene[,2], txPval=pConfirmation[tx2gene[,1],])
+  nestedDf <- df %>% group_by(geneID) %>% nest()
+  nestedDf$genePval <- pScreen[as.character(nestedDf$geneID)]
+}
+
+
 .stageWiseTest <- function(pScreen, pConfirmation, alpha,
                            method=c("none","holm","dte","dtu","user"),
                            adjustment=NULL, tx2gene=NULL, pScreenAdjusted,
@@ -197,8 +206,8 @@
 .getAdjustedP <- function(object, onlySignificantGenes=FALSE, order=TRUE){
   ## this function is used in getAdjustedPValues
   ## to return the adjusted p-values for a stageR class.
-  message(paste0("The returned adjusted p-values are based on a",
-                 "stage-wise testing approach and are only valid for",
+  message(paste0("The returned adjusted p-values are based on a ",
+                 "stage-wise testing approach and are only valid for ",
                  "the provided target OFDR level of ",
                  getAlpha(object)*100,
                  "%. If a different target OFDR level is of interest,",
@@ -231,8 +240,8 @@
 .getAdjustedPTx <- function(object, onlySignificantGenes=FALSE, order=TRUE){
   ## this function is used in getAdjustedPValues
   ## to return the adjusted p-values for a stageRTx class.
-  message(paste0("The returned adjusted p-values are based on a",
-                 "stage-wise testing approach and are only valid for",
+  message(paste0("The returned adjusted p-values are based on a ",
+                 "stage-wise testing approach and are only valid for ",
                  "the provided target OFDR level of ",
                  getAlpha(object)*100,
                  "%. If a different target OFDR level is of interest,",
@@ -318,7 +327,7 @@
 #' @param object an object of the \code{\link{stageRClass}} class.
 #' @param method Character string indicating the method used for FWER correction in the confirmation stage of the stage-wise analysis. Can be any of \code{"none"}, \code{"holm"}, \code{"dte"}, \code{"dtu"}, \code{"user"}. \code{"none"} will not adjust the p-values in the confirmation stage. \code{"holm"} is an adapted Holm procedure for a stage-wise analysis, where the method takes into account the fact that genes in the confirmation stage have already passed the screening stage, hence the procedure will be more powerful for the most significant p-value as compared to the standard Holm procedure. \code{"dte"} is the adjusted Holm-Shaffer procedure for differential transcript expression analysis. \code{"dtu"} is the adjusted Holm-Shaffer procedure for differential transcript usage. \code{"user"} indicates a user-defined adjustment that should be specified with the \code{adjustment} argument.
 #' @param alpha the OFDR on which to control the two-stage analysis.
-#' @param tx2gene Only applicable when  \code{method} is \code{"dte"} or \code{"dtu"}.  A \code{\link[base]{data.frame}} with transcript IDs in the first columns and gene IDs in the second column. The rownames from \code{pConfirmation} must be contained in the transcript IDs from \code{tx2gene}, and the names from \code{pScreen} must be contained in the gene IDs.
+#' @param tx2gene Only applicable when  \code{method} is \code{"dte"} or \code{"dtu"}.  A \code{\link[base]{data.frame}} with transcript IDs in the first column and gene IDs in the second column. The rownames from \code{pConfirmation} must be contained in the transcript IDs from \code{tx2gene}, and the names from \code{pScreen} must be contained in the gene IDs.
 #' @param adjustment a user-defined adjustment of the confirmation stage p-values. Only applicable when \code{method} is \code{"user"} and ignored otherwise.
 #' @param ... Additional arguments passed to \code{.stageWiseTest}
 #' @return
@@ -577,7 +586,7 @@ setMethod("getResults",signature=signature(object="stageR"),
 #' transcripts=paste0("tx",1:1000)
 #' tx2gene=data.frame(transcripts,genes)
 #' #gene-wise q-values
-#' pScreen=c(seq(1e-10,1e-2,length.out=nGenes-100),seq(1e-2,.2,length.out=50),seq(50))
+#' pScreen=c(seq(1e-10,1e-2,length.out=nGenes-100),seq(1e-2,.2,length.out=50),seq(.2,1,length.out=50))
 #' names(pScreen)=names(table(genes)) #discards genes that are not simulated
 #' pConfirmation=matrix(runif(1000),nrow=1000,ncol=1)
 #' rownames(pConfirmation)=transcripts
@@ -631,7 +640,7 @@ setMethod("getSignificantGenes",signature=signature(object="stageRTx"),
 #' transcripts=paste0("tx",1:1000)
 #' tx2gene=data.frame(transcripts,genes)
 #' #gene-wise q-values
-#' pScreen=c(seq(1e-10,1e-2,length.out=nGenes-100),seq(1e-2,.2,length.out=50),seq(50))
+#' pScreen=c(seq(1e-10,1e-2,length.out=nGenes-100),seq(1e-2,.2,length.out=50),seq(.2,1,length.out=50))
 #' names(pScreen)=names(table(genes)) #discards genes that are not simulated
 #' pConfirmation=matrix(runif(1000),nrow=1000,ncol=1)
 #' rownames(pConfirmation)=transcripts
@@ -716,7 +725,7 @@ setMethod("getAlpha",signature=signature(object="stageRTx"),
 #' transcripts=paste0("tx",1:1000)
 #' tx2gene=data.frame(transcripts,genes)
 #' #gene-wise q-values
-#' pScreen=c(seq(1e-10,1e-2,length.out=nGenes-100),seq(1e-2,.2,length.out=50),seq(50))
+#' pScreen=c(seq(1e-10,1e-2,length.out=nGenes-100),seq(1e-2,.2,length.out=50),seq(.2,1,length.out=50))
 #' names(pScreen)=names(table(genes)) #discards genes that are not simulated
 #' pConfirmation=matrix(runif(1000),nrow=1000,ncol=1)
 #' rownames(pConfirmation)=transcripts
