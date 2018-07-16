@@ -3,9 +3,16 @@
 .createGeneTibble <- function(pScreen, pConfirmation, tx2gene=NULL){
   require(tidyverse)
 
-  df <- data.frame(txID=tx2gene[,1], geneID=tx2gene[,2], txPval=pConfirmation[tx2gene[,1],])
-  nestedDf <- df %>% group_by(geneID) %>% nest()
-  nestedDf$genePval <- pScreen[as.character(nestedDf$geneID)]
+  if(is.null(tx2gene)){
+    df <- data.frame(geneID=names(pScreen), genePval=pScreen, pConfirmation)
+    nestedDf <- df %>% group_by(geneID) %>% nest()
+    return(nestedDf)
+  } else { #transcript data
+    df <- data.frame(txID=tx2gene[,1], geneID=tx2gene[,2], txPval=pConfirmation[tx2gene[,1],])
+    nestedDf <- df %>% group_by(geneID) %>% nest()
+    nestedDf$genePval <- pScreen[as.character(nestedDf$geneID)]
+    return(nestedDf)
+  }
 }
 
 
@@ -39,6 +46,10 @@
       padjScreen <- pScreen
   significanceOrdering <- order(padjScreen)
   genesStageI <- padjScreen<=alpha
+
+  # create nested data frame, and only select genes passing screening stage.
+  geneTibble <- .createGeneTibble(pScreen=pScreen, pConfirmation=pConfirmation, tx2gene=tx2gene)
+  geneTibbleStageI <- geneTibble[geneTibble$geneID%in%names(which(genesStageI)),]
 
   if(method=="none"){
 
