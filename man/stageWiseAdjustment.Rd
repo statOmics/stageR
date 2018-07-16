@@ -28,7 +28,7 @@ stageWiseAdjustment(object, method, alpha, ...)
 
 \item{adjustment}{a user-defined adjustment of the confirmation stage p-values. Only applicable when \code{method} is \code{"user"} and ignored otherwise.}
 
-\item{tx2gene}{Only applicable when  \code{method} is \code{"dte"} or \code{"dtu"}.  A \code{\link[base]{data.frame}} with transcript IDs in the first columns and gene IDs in the second column. The rownames from \code{pConfirmation} must be contained in the transcript IDs from \code{tx2gene}, and the names from \code{pScreen} must be contained in the gene IDs.}
+\item{tx2gene}{Only applicable when  \code{method} is \code{"dte"} or \code{"dtu"}.  A \code{\link[base]{data.frame}} with transcript IDs in the first column and gene IDs in the second column. The rownames from \code{pConfirmation} must be contained in the transcript IDs from \code{tx2gene}, and the names from \code{pScreen} must be contained in the gene IDs.}
 }
 \value{
 A stageR/stageRTx object with stage-wise adjusted p-values.

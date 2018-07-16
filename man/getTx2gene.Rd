@@ -30,7 +30,7 @@ nGenes=length(table(genes))
 transcripts=paste0("tx",1:1000)
 tx2gene=data.frame(transcripts,genes)
 #gene-wise q-values
-pScreen=c(seq(1e-10,1e-2,length.out=nGenes-100),seq(1e-2,.2,length.out=50),seq(50))
+pScreen=c(seq(1e-10,1e-2,length.out=nGenes-100),seq(1e-2,.2,length.out=50),seq(.2,1,length.out=50))
 names(pScreen)=names(table(genes)) #discards genes that are not simulated
 pConfirmation=matrix(runif(1000),nrow=1000,ncol=1)
 rownames(pConfirmation)=transcripts
