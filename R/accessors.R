@@ -11,7 +11,7 @@
     nestedDf$genePval <- pScreen[as.character(nestedDf$geneID)]
     return(nestedDf)
   } else { #transcript data
-    df <- data.frame(txID=tx2gene[,1], geneID=tx2gene[,2], txPval=pConfirmation[tx2gene[,1],])
+    df <- data.frame(txID=tx2gene[,1], geneID=tx2gene[,2], pvalue=pConfirmation[tx2gene[,1],])
     nestedDf <- df %>% group_by(geneID) %>% nest()
     nestedDf$genePval <- pScreen[as.character(nestedDf$geneID)]
     return(nestedDf)
@@ -25,6 +25,75 @@
   return(df)
 }
 
+## holm adjustment in confirmation stage for complex DGE experiments
+.holmAdjustment <- function(df){
+  pval <- df$pvalue
+  o <- order(pval)
+  if(all(!is.na(pval))){ #if no NA's, standard Holm with screening correct.
+    n <- length(pval)
+  } else { #if NA's present, only correct for non NA p-values
+    n <- length(pval[!is.na(pval)])
+  }
+  # Holm adjustment: passing screening stage implies 1 false hypothesis
+  adjustment <- c(n-1,(n-1):1)
+  if(length(adjustment)!=length(pval)){ #if NA values are present
+    adjustment <- c(adjustment, rep(1,length(pval)-length(adjustment)))
+  }
+  rowAdjusted <- pval[o]*adjustment
+  rowAdjusted <- pmin(rowAdjusted,1)
+  rowAdjusted <- cummax(rowAdjusted)
+  rowBack <- vector(length=length(pval))
+  rowBack[o] <- rowAdjusted
+  df$padj <- rowBack
+  return(df)
+}
+
+## user specified adjustment in confirmation stage for complex DGE experiments
+.userAdjustment <- function(df, adjustment){
+  pval <- df$pvalue
+  o <- order(pval)
+  rowAdjusted <- pval[o]*adjustment
+  rowAdjusted <- pmin(rowAdjusted,1)
+  # check monotone increase of adjusted p-values
+  rowAdjusted <- cummax(rowAdjusted)
+  rowBack <- vector(length=length(pval))
+  rowBack[o] <- rowAdjusted
+  df$padj <- rowBack
+  return(df)
+}
+
+## DTE adjustment in confirmation stage
+.dteAdjustment <- function(df){
+  pval <- df$pvalue
+  o <- order(pval)
+  n <- length(pval)
+  # DTE adjustment: passing screening stage implies 1 false hypothesis
+  if(n==1) adjustment=0 else adjustment=c(n-1,(n-1):1)
+  rowAdjusted <- pval[o]*adjustment
+  rowAdjusted <- pmin(rowAdjusted,1)
+  rowAdjusted <- cummax(rowAdjusted)
+  rowBack <- vector(length=length(pval))
+  rowBack[o] <- rowAdjusted
+  df$padj <- rowBack
+  return(df)
+}
+
+## DTU adjustment in confirmation stage
+.dtuAdjustment <- function(df){
+  pval <- df$pvalue
+  o <- order(pval)
+  n <- length(pval)
+  # DTU adjustment: passing screening stage implies 2 false hypotheses
+  if(n==1) stop("Some genes have only one transcript; this is incompatible with DTU correction. Remove these transcripts.")
+  if(n==2) adjustment=c(0,0) else adjustment=c(n-2,n-2,(n-2):1)
+  rowAdjusted <- pval[o]*adjustment
+  rowAdjusted <- pmin(rowAdjusted,1)
+  rowAdjusted <- cummax(rowAdjusted)
+  rowBack <- vector(length=length(pval))
+  rowBack[o] <- rowAdjusted
+  df$padj <- rowBack
+  return(df)
+}
 
 
 .stageWiseTest <- function(pScreen, pConfirmation, alpha,
@@ -62,6 +131,7 @@
   geneTibble <- .createGeneTibble(pScreen=pScreen, pConfirmation=pConfirmation, tx2gene=tx2gene)
   geneTibbleStageI <- geneTibble[geneTibble$geneID%in%names(which(genesStageI)),]
 
+  # confirmation stage adjustment
   if(method=="none"){
 
     geneTibbleStageII <- geneTibbleStageI
@@ -69,61 +139,18 @@
 
   } else if(method=="holm"){
 
-    padjScreenReturn <- padjScreen
-    ## only do correction for genes that passed the screening stage
-    pAdjConfirmation <- matrix(nrow=nrow(pConfirmation),
-                               ncol=ncol(pConfirmation),
-                               dimnames=list(c(rownames(pConfirmation)),
-                                             colnames(pConfirmation)))
-
-    for(k in seq_len(sum(genesStageI))){
-        row <- pConfirmation[which(genesStageI)[k],]
-        # Holm correction conditional on passing the screening stage.
-        o <- order(row)
-        if(all(!is.na(row))){ #if no NA's, standard Holm with screening correct.
-          n <- length(row)
-        } else { #if NA's present, only correct for non NA p-values
-          n <- length(row[!is.na(row)])
-        }
-        # Holm adjustment: passing screening stage implies 1 false hypothesis
-        adjustment <- c(n-1,(n-1):1)
-        if(length(adjustment)!=length(row)){ #if NA values are present
-          adjustment <- c(adjustment, rep(1,length(row)-length(adjustment)))
-        }
-        rowAdjusted <- row[o]*adjustment
-        rowAdjusted <- pmin(rowAdjusted,1)
-        rowAdjusted <- cummax(rowAdjusted)
-        rowBack <- vector(length=length(row))
-        rowBack[o] <- rowAdjusted
-        pAdjConfirmation[which(genesStageI)[k],] <- rowBack
-    }
+    geneTibbleStageII <- geneTibbleStageI
+    geneTibbleStageII$data <- map(geneTibbleStageI$data, .holmAdjustment)
 
   } else if(method=="user"){
     if(length(adjustment)!=ncol(pConfirmation)){
-      stop("the length of the adjustment vector is not equal to the number of
-           confirmation hypotheses as defined by the number of
-           columns in pConfirmation.")
+      stop("the length of the adjustment vector is not equal to the number of confirmation hypotheses as defined by the number of columns in pConfirmation.")
     }
-    padjScreenReturn=padjScreen
-    pAdjConfirmation <- matrix(nrow=nrow(pConfirmation),
-                               ncol=ncol(pConfirmation),
-                               dimnames=list(c(rownames(pConfirmation)),
-                                             colnames(pConfirmation)))
-    for(k in seq_len(sum(genesStageI))){
-        row <- pConfirmation[which(genesStageI)[k],]
-        o <- order(row)
-        rowAdjusted <- row[o]*adjustment
-        rowAdjusted <- pmin(rowAdjusted,1)
-        # check monotone increase of adjusted p-values
-        rowAdjusted <- cummax(rowAdjusted)
-        rowBack <- vector(length=length(row))
-        rowBack[o] <- rowAdjusted
-        rowBack
-      pAdjConfirmation[which(genesStageI)[k],] <- rowBack
-    }
+
+    geneTibbleStageII <- geneTibbleStageI
+    geneTibbleStageII$data <- map(geneTibbleStageI$data, .userAdjustment,  adjustment=adjustment)
 
   } else if(method=="dte"){
-
     if(any(is.na(match(rownames(pConfirmation),tx2gene[,1])))){
       stop("not all transcript names in pConfirmation match with
            a transcript ID from the tx2gene object.")
@@ -132,37 +159,11 @@
       stop("not all gene names in pScreen match with
            a gene ID from the tx2gene object.")
     }
-    significantGenes <- names(padjScreen)[genesStageI]
-    geneForEachTx <- tx2gene[match(rownames(pConfirmation),tx2gene[,1]),2]
-    txLevelAdjustments <- sapply(significantGenes,function(gene){
-      id <- which(geneForEachTx %in% gene)
-      row <- pConfirmation[id,]
-      #make sure names are passed along if only one tx
-      if(length(id)==1) names(row)=rownames(pConfirmation)[id]
-      o <- order(row)
-      n <- length(row)
-      # DTE adjustment: passing screening stage implies 1 false hypothesis
-      if(n==1) adjustment=0 else adjustment=c(n-1,(n-1):1)
-      rowAdjusted <- row[o]*adjustment
-      rowAdjusted <- pmin(rowAdjusted,1)
-      rowAdjusted <- cummax(rowAdjusted)
-      rowBack <- vector(length=length(row))
-      rowBack[o] <- rowAdjusted
-      names(rowBack) <- names(row)
-      rowBack
-    }, simplify=FALSE)
-    pAdjConfirmation <- matrix(nrow=nrow(pConfirmation),ncol=1)
-    rownames(pAdjConfirmation) <- paste0(geneForEachTx,":",rownames(pConfirmation))
-    # adjusted p-values for screening hypothesis
-    padjScreenReturn <- padjScreen[geneForEachTx]
-    # adjusted p-values for confirmation hypothesis
-    idCon <- names(unlist(txLevelAdjustments))
-    # replace '.' by ':' in names to avoid confusion with ENSEMBL version names
-    idCon <- gsub(x=idCon,pattern=".",replacement=":",fixed=TRUE)
-    pAdjConfirmation[idCon,1] <- unlist(txLevelAdjustments)
+
+    geneTibbleStageII <- geneTibbleStageI
+    geneTibbleStageII$data <- map(geneTibbleStageI$data, .dteAdjustment)
 
   } else if(method=="dtu"){
-
     if(any(is.na(match(rownames(pConfirmation),tx2gene[,1])))){
       stop("not all transcript names in pConfirmation match with
            a transcript ID from the tx2gene object.")
@@ -171,44 +172,23 @@
       stop("not all gene names in pScreen match with
            a gene ID from the tx2gene object.")
     }
-    # adjust screening
-    significantGenes <- names(padjScreen)[genesStageI]
-    geneForEachTx <- as.character(tx2gene[match(rownames(pConfirmation),
-                                                tx2gene[,1]),2])
-    txLevelAdjustments <- sapply(significantGenes,function(gene){
-      id <- which(geneForEachTx %in% gene)
-      row <- pConfirmation[id,]
-      o <- order(row)
-      n <- length(row)
-      # DTU adjustment: passing screening stage implies 2 false hypotheses
-      if(n==1) stop("Some genes have only one transcript; this is incompatible with DTU correction. Remove these transcripts.")
-      if(n==2) adjustment=c(0,0) else adjustment=c(n-2,n-2,(n-2):1)
-      rowAdjusted <- row[o]*adjustment
-      rowAdjusted <- pmin(rowAdjusted,1)
-      rowAdjusted <- cummax(rowAdjusted)
-      rowBack <- vector(length=length(row))
-      rowBack[o] <- rowAdjusted
-      names(rowBack) <- names(row)
-      rowBack
-    }, simplify=FALSE)
-    pAdjConfirmation <- matrix(nrow=nrow(pConfirmation),ncol=1)
-    rownames(pAdjConfirmation) <- paste0(geneForEachTx,":",
-                                         rownames(pConfirmation))
-    # adjusted p-values for screening hypothesis
-    padjScreenReturn <- padjScreen[as.character(geneForEachTx)]
-    # adjusted p-values for confirmation hypothesis
-    idCon <- names(unlist(txLevelAdjustments))
-    # replace '.' by ':' in names to avoid confusion with ENSEMBL version names
-    idCon <- gsub(x=idCon,pattern=".",replacement=":",fixed=TRUE)
-    pAdjConfirmation[idCon,1] <- unlist(txLevelAdjustments)
 
-  } else stop("method must be either one of 'holm' or ... ")
+    geneTibbleStageII <- geneTibbleStageI
+    geneTibbleStageII$data <- map(geneTibbleStageI$data, .dtuAdjustment)
+
+  } else stop("specify a valid method for the confirmation stage.")
 
   #BH-adjusted s.l.
-  alphaAdjusted <- sum(padjScreen<=alpha)/length(padjScreen)*alpha
+  G <- length(padjScreen) #nr of genes
+  alphaAdjusted <- sum(padjScreen<=alpha)/G*alpha
+
+
+  ###### UNTIL HERE.
+
+
   #Correct FWER-adjusted p-values acc. to BH-adjusted s.l.
   naPAdj <- is.na(pAdjConfirmation)
-  pAdjBH <- pAdjConfirmation[!naPAdj]*length(padjScreen)/sum(padjScreen<=alpha)
+  pAdjBH <- pAdjConfirmation[!naPAdj]*G/sum(padjScreen<=alpha)
   pAdjConfirmation[!naPAdj] <- pmin(pAdjBH,1)
   if(!(method %in% c("dte","dtu"))){
     pAdjStage <- cbind(padjScreenReturn,pAdjConfirmation)
