@@ -6,7 +6,7 @@
   if(is.null(tx2gene)){
     df <- data.frame(geneID=names(pScreen), pConfirmation)
     # convert to long format
-    df <- melt(df, id.vars="geneID", variable.name="hypothesis", value.name="pvalue")
+    df <- reshape2::melt(df, id.vars="geneID", variable.name="hypothesis", value.name="pvalue")
     nestedDf <- df %>% group_by(geneID) %>% nest()
     nestedDf$genePval <- pScreen[as.character(nestedDf$geneID)]
     return(nestedDf)
@@ -17,6 +17,14 @@
     return(nestedDf)
   }
 }
+
+
+## no confirmation stage adjustment function
+.noAdjustment <- function(df){
+  df$adjP <- df$pvalue
+  return(df)
+}
+
 
 
 .stageWiseTest <- function(pScreen, pConfirmation, alpha,
@@ -56,12 +64,8 @@
 
   if(method=="none"){
 
-    pAdjConfirmation <- matrix(nrow=nrow(pConfirmation),
-                               ncol=ncol(pConfirmation),
-                               dimnames=list(c(rownames(pConfirmation)),
-                                             colnames(pConfirmation)))
-    pAdjConfirmation[genesStageI,] <- pConfirmation[genesStageI,]
-    padjScreenReturn <- padjScreen
+    geneTibbleStageII <- geneTibbleStageI
+    geneTibbleStageII$data <- map(geneTibbleStageI$data, .noAdjustment)
 
   } else if(method=="holm"){
 
@@ -83,7 +87,7 @@
         }
         # Holm adjustment: passing screening stage implies 1 false hypothesis
         adjustment <- c(n-1,(n-1):1)
-        if(length(adjustment)!=length(row)){
+        if(length(adjustment)!=length(row)){ #if NA values are present
           adjustment <- c(adjustment, rep(1,length(row)-length(adjustment)))
         }
         rowAdjusted <- row[o]*adjustment

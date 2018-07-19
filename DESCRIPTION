@@ -29,4 +29,6 @@ Suggests:
     testthat
 VignetteBuilder: knitr
 Imports: methods,
-	  stats
+	  stats,
+    tidyverse,
+    reshape2
