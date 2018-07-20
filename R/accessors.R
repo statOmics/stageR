@@ -101,6 +101,7 @@
                            adjustment=NULL, tx2gene=NULL, pScreenAdjusted,
                            allowNA=FALSE){
 
+  ## remove NA screening hypothesis p-values.
   if(allowNA){
     if(any(is.na(pScreen))){
       naFeatures <- which(is.na(pScreen))
@@ -111,7 +112,7 @@
     }
   }
 
-  ## check for NA values
+  ## check for NA values.
   if(!allowNA){
     if(any(is.na(pScreen)) | any(is.na(pConfirmation))){
       stop("NA p-values found in either the screening or confirmation tests.
@@ -178,27 +179,21 @@
 
   } else stop("specify a valid method for the confirmation stage.")
 
-  #BH-adjusted s.l.
+  # calculate BH-adjusted s.l.
   G <- length(padjScreen) #nr of genes
-  alphaAdjusted <- sum(padjScreen<=alpha)/G*alpha
+  R <- sum(padjScreen<=alpha) #nr of rejections
+  alphaAdjusted <- R/G*alpha
 
+  # correct FWER-adjusted p-values acc. to BH-adjusted s.l.
+  geneTibbleStageII$data <- map(geneTibbleStageII$data, function(x){
+    naId <- is.na(x$padj)
+    x <- x %>% mutate(padj_SW=padj)
+    x$padj_SW[!naId] <- x$padj[!naId]*G/R
+    x$padj_SW[!naId] <- pmin(x$padj_SW[!naId],1)
+    return(x)
+  })
 
-  ###### UNTIL HERE.
-
-
-  #Correct FWER-adjusted p-values acc. to BH-adjusted s.l.
-  naPAdj <- is.na(pAdjConfirmation)
-  pAdjBH <- pAdjConfirmation[!naPAdj]*G/sum(padjScreen<=alpha)
-  pAdjConfirmation[!naPAdj] <- pmin(pAdjBH,1)
-  if(!(method %in% c("dte","dtu"))){
-    pAdjStage <- cbind(padjScreenReturn,pAdjConfirmation)
-    colnames(pAdjStage)[1] <- "padjScreen"
-  }
-  if(method %in% c("dte","dtu")){
-    pAdjStage <- cbind(pAdjConfirmation,padjScreenReturn)[,2:1]
-    colnames(pAdjStage) <- c("gene","transcript")
-  }
-  return(list(pAdjStage=pAdjStage, alphaAdjusted=alphaAdjusted))
+  return(list(geneTibble=geneTibbleStageII, alphaAdjusted=alphaAdjusted))
 }
 
 .getAdjustedP <- function(object, onlySignificantGenes=FALSE, order=TRUE){
