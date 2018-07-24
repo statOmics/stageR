@@ -46,13 +46,44 @@ This function will adjust p-values according to a hierarchical two-stage testing
 }}
 
 \examples{
-pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
-names(pScreen)=paste0("gene",1:300)
-pConfirmation=matrix(runif(900),nrow=300,ncol=3)
-dimnames(pConfirmation)=list(paste0("gene",1:300),c("H1","H2","H3"))
-stageRObj <- stageR(pScreen=pScreen, pConfirmation=pConfirmation)
-stageRObj <- stageWiseAdjustment(stageRObj, method="holm", alpha=0.05)
-getAdjustedPValues(stageRObj, onlySignificantGenes=TRUE, order=TRUE)
+   # DGE
+   pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
+   names(pScreen)=paste0("gene",1:300)
+   set.seed(7)
+   pConfirmation=matrix(runif(900),nrow=300,ncol=3)
+   dimnames(pConfirmation)=list(paste0("gene",1:300),c("H1","H2","H3"))
+   stageRObj <- stageR(pScreen=pScreen, pConfirmation=pConfirmation)
+   stageRObj <- stageWiseAdjustment(stageRObj, method="holm", alpha=0.05)
+
+
+   # tx with pScreen
+   set.seed(1)
+   genes=paste0("gene",sample(1:200,1000,replace=TRUE))
+   nGenes=length(table(genes))
+   transcripts=paste0("tx",1:1000)
+   tx2gene=data.frame(transcripts,genes)
+   #gene-wise p-values
+   pScreen=c(seq(1e-10,1e-2,length.out=nGenes-100),seq(1e-2,.2,length.out=50),seq(.2,1,length.out=50))
+   names(pScreen)=names(table(genes)) #discards genes that are not simulated
+   pConfirmation=matrix(runif(1000),nrow=1000,ncol=1)
+   rownames(pConfirmation)=transcripts
+   stageRObj <- stageRTx(pScreen=pScreen, pConfirmation=pConfirmation, tx2gene=tx2gene)
+   stageRObj <- stageWiseAdjustment(stageRObj, method="dte", alpha=0.05)
+
+   # tx with aggMethod lancaster
+   set.seed(1)
+   genes=paste0("gene",sample(1:200,1000,replace=TRUE))
+   nGenes=length(table(genes))
+   transcripts=paste0("tx",1:1000)
+   tx2gene=data.frame(transcripts,genes)
+   pScreen=NULL
+   pConfirmation=matrix(c(runif(100,1e-10,1e-4),runif(900)),nrow=1000,ncol=1)
+   rownames(pConfirmation)=transcripts
+   aggMethod="lancaster"
+   weights=seq(0,1,length=nrow(pConfirmation))
+   stageRObj <- stageRTx(pConfirmation=pConfirmation ,pScreenAdjusted=pScreenAdjusted, tx2gene=tx2gene)
+   stageRObj <- stageWiseAdjustment(stageRObj, method="dte", alpha=0.05, aggMethod=aggMethod, weights=weights)
+
 }
 \references{
 Van den Berge K., Soneson C., Robinson M.D., and Clement L. (2017). stageR: a general stage-wise method for controlling the gene-level false discovery rate in differential expression and differential transcript usage. Genome Biology 18:151. https://doi.org/10.1186/s13059-017-1277-0

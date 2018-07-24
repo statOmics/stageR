@@ -228,6 +228,8 @@ qvalDxr <- perGeneQValue(dxr)
 
 ## Stage-wise analysis
 
+### Gene-level p-values precalculated
+
 The code above is a conventional `DEXSeq` analysis for analysing differential transcript usage. It would proceed by either assessing the significant genes according to the gene-wise q-values or by assessing the significant transcripts according to the transcript-level p-values, after adjustment for multiple testing. Performing and interpreting both analyses does not provide appropriate FDR control and thus should be avoided. However, interpretation on the gene level combined with transcript-level results can provide useful biological insights and this can be achieved through stage-wise testing. In the following code, we show how to automatically perform a stage-wise analysis using `stageR`. We start by constructing
 
 - a named vector of gene-wise q-values `pScreen`
@@ -254,12 +256,14 @@ We can then explore the results using a range of accessor functions. The signifi
 
 ```{r}
 head(getSignificantGenes(stageRObj))
+nrow(getSignificantGenes(stageRObj))
 ```
 
 Similar, the significant transcripts can be returned with `getSignificantTx`. The output is now no longer collapsed by gene, and all significant transcripts can be found in the data frame. Note, that, again, three different p-values are returned for every hypothesis: `pvalue`, `padj` and `padj_SW`. `pvalue` represents the raw confirmation stage p-value for that transcript. `padj` represents the FWER adjusted p-values, and `padj_SW` are the FWER adjusted p-values that have also been corrected to the BH-adjusted significance level of the screening stage. **Hence, `padj_SW` may directly be compared to the requested OFDR level (here, $5\%$).**
 
 ```{r}
 head(getSignificantTx(stageRObj))
+nrow(getSignificantTx(stageRObj))
 ```
 
 
@@ -271,8 +275,44 @@ head(padj)
 head(padj$data,2) #transcript-level results for the first two genes in padj.
 ```
 
+### Aggregate transcript-level p-values with stageR
 
-### Note on a stage-wise DEXSeq analysis.
+DEXSeq uses Sidak's method to aggregate p-values across transcripts within a gene. Recently, a number of other procedures have been adopted for p-value aggregation [@Yi2018], which are typically more powerful than the DEXSeq procedure. stageR now allows you to set up a `stageR` object by only providing transcript-level p-values and specifying a method of choice on how to aggregate the transcript-level p-values to the gene level. The method for aggregation can be specified using the `aggMethod` argument in the `stageWiseAdjustment` function. Currently, three methods are available: Sidak, Fisher and Lancaster's method, as implemented in the aggregation R package. For more details on these aggregation methods, we refer to [@Yi2018]. Below, we use Fisher's method for p-value aggregation, which results in a more than threefold increase in the number of significant genes and transcripts.
+
+```{r}
+stageRObj <- stageRTx(pConfirmation=pConfirmation, tx2gene=tx2gene)
+stageRObj <- stageWiseAdjustment(object=stageRObj, method="dtu", alpha=0.05, aggMethod="fisher")
+nrow(getSignificantGenes(stageRObj))
+nrow(getSignificantTx(stageRObj))
+```
+
+Lancaster's method does a weighted p-value aggregation. Yi et al. (2018) foudn that it is powerful when the weights correspond to the base mean of the transcripts according, which is more or less their mean across samples. Lancaster's method can be used in stageR if the weights are provided. Note that the weights must be in the same order as the rows in `pConfirmation`.
+
+```{r}
+# make sure baseMean is in same order as pConfirmation.
+baseMean <- dxr$exonBaseMean
+names(baseMean) <- substr(x=names(baseMean),17,31)
+baseMean <- log1p(baseMean[rownames(pConfirmation)])
+stageRObj <- stageRTx(pConfirmation=pConfirmation, tx2gene=tx2gene)
+stageRObj <- stageWiseAdjustment(object=stageRObj, method="dtu", alpha=0.05, aggMethod="lancaster", weights=baseMean)
+nrow(getSignificantGenes(stageRObj))
+nrow(getSignificantTx(stageRObj))
+```
+
+As a note of caution, note that the weights are crucial. For example, we find fewer genes and transcripts if we do not log the baseMean, as shown below.
+
+```{r}
+# make sure baseMean is in same order as pConfirmation.
+baseMean <- dxr$exonBaseMean
+names(baseMean) <- substr(x=names(baseMean),17,31)
+baseMean <- baseMean[rownames(pConfirmation)]
+stageRObj <- stageRTx(pConfirmation=pConfirmation, tx2gene=tx2gene)
+stageRObj <- stageWiseAdjustment(object=stageRObj, method="dtu", alpha=0.05, aggMethod="lancaster", weights=baseMean)
+nrow(getSignificantGenes(stageRObj))
+nrow(getSignificantTx(stageRObj))
+```
+
+#### Note on a stage-wise DEXSeq analysis.
 
 By default, DEXSeq performs an independent filtering step. This may result in a number of genes that have been filtered and thus no q-value for these genes is given in the output of `perGeneQValue`. This can cause an error in the stage-wise analysis, since we have confirmation stage p-values for transcripts but no q-value for their respective genes. In order to avoid this, one should filter these transcripts in the `pConfirmation` and `tx2gene` objects.
 

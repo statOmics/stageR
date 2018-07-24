@@ -413,6 +413,7 @@ setMethod("getPConfirmation",signature=signature(object="stageRTx"),
 .getAdjustedP <- function(object, onlySignificantGenes=FALSE, order=TRUE){
   ## this function is used in getAdjustedPValues
   ## to return the adjusted p-values for a stageR class.
+  ## note that ordering happens on adjusted p-values because raw p-values are not always provided.
   message(paste0("The returned adjusted p-values are based on a ",
                  "stage-wise testing approach and are only valid for ",
                  "the provided target OFDR level of ",
@@ -422,7 +423,7 @@ setMethod("getPConfirmation",signature=signature(object="stageRTx"),
   if(onlySignificantGenes){ #significant genes
       if(order){
         padj <- object@adjustedP
-        o <- order(padj$genePval)
+        o <- order(padj$genePadj)
         return(padj[o,])
       } else {
         return(object@adjustedP)
@@ -432,7 +433,7 @@ setMethod("getPConfirmation",signature=signature(object="stageRTx"),
     padj <- object@adjustedP
     tibble$data[match(padj$geneID,tibble$geneID)] <- padj$data
     if(order){
-      o <- order(tibble$genePval)
+      o <- order(tibble$genePadj)
       return(tibble[o,])
     } else {
       return(tibble)
