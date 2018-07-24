@@ -16,7 +16,7 @@
     nestedDf <- df %>% group_by(geneID) %>% nest(.key="data")
   }
 
-  if(!is.null(pScreen)){
+  if(!is.null(pScreen) & pScreenAdjusted==FALSE){
     nestedDf$genePval <- pScreen[as.character(nestedDf$geneID)]
     nestedDf <- nestedDf[,c("geneID","genePval","data")]
   }
