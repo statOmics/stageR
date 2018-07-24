@@ -159,7 +159,9 @@
   } else {
     padjScreen <- pScreen
   }
-  geneTibble$genePadj <- padjScreen
+  # add adjusted screening p-value to tibble.
+  geneTibble$genePadj <- NA
+  geneTibble$genePadj[match(names(padjScreen),as.character(geneTibble$geneID))] <- padjScreen
   genesStageI <- padjScreen<=alpha
 
   # only select genes passing screening stage.
