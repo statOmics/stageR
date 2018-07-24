@@ -1,7 +1,6 @@
 #' @include stageRClasses.R allGenerics.R constructors.R
 #' @import tidyverse dplyr
 
-
 .createGeneTibble <- function(pScreen=NULL, pConfirmation, tx2gene=NULL, weights=NULL){
   require(tidyverse) ; require(reshape2)
 
@@ -11,7 +10,7 @@
     df <- reshape2::melt(df, id.vars="geneID", variable.name="hypothesis", value.name="pvalue")
     nestedDf <- df %>% group_by(geneID) %>% nest(.key="data")
   } else { #transcript data
-    df <- data.frame(txID=tx2gene[,1], geneID=tx2gene[,2], pvalue=pConfirmation[tx2gene[,1],])
+    df <- data.frame(txID=tx2gene[,1], geneID=tx2gene[,2], pvalue=pConfirmation[as.character(tx2gene[,1]),])
     # note that weights are only applicable on tx-level data.
     if(!is.null(weights)) df$weights <- weights
     nestedDf <- df %>% group_by(geneID) %>% nest(.key="data")
@@ -27,7 +26,7 @@
 
 ## no confirmation stage adjustment function
 .noAdjustment <- function(df){
-  df$adjP <- df$pvalue
+  df$padj <- df$pvalue
   return(df)
 }
 
@@ -259,13 +258,44 @@
 #' L. Yi, H. Pimentel, N.L. Bray, and L. Pachter, "Gene-level differential analysis at transcript-level resolution." Genome Biology 19:53, 2018.
 #'
 #' @examples
-#' pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
-#' names(pScreen)=paste0("gene",1:300)
-#' pConfirmation=matrix(runif(900),nrow=300,ncol=3)
-#' dimnames(pConfirmation)=list(paste0("gene",1:300),c("H1","H2","H3"))
-#' stageRObj <- stageR(pScreen=pScreen, pConfirmation=pConfirmation)
-#' stageRObj <- stageWiseAdjustment(stageRObj, method="holm", alpha=0.05)
-#' getAdjustedPValues(stageRObj, onlySignificantGenes=TRUE, order=TRUE)
+#'    # DGE
+#'    pScreen=c(seq(1e-10,1e-2,length.out=100),seq(1e-2,.2,length.out=100),seq(.2,1,length.out=100))
+#'    names(pScreen)=paste0("gene",1:300)
+#'    set.seed(7)
+#'    pConfirmation=matrix(runif(900),nrow=300,ncol=3)
+#'    dimnames(pConfirmation)=list(paste0("gene",1:300),c("H1","H2","H3"))
+#'    stageRObj <- stageR(pScreen=pScreen, pConfirmation=pConfirmation)
+#'    stageRObj <- stageWiseAdjustment(stageRObj, method="holm", alpha=0.05)
+#'
+#'
+#'    # tx with pScreen
+#'    set.seed(1)
+#'    genes=paste0("gene",sample(1:200,1000,replace=TRUE))
+#'    nGenes=length(table(genes))
+#'    transcripts=paste0("tx",1:1000)
+#'    tx2gene=data.frame(transcripts,genes)
+#'    #gene-wise p-values
+#'    pScreen=c(seq(1e-10,1e-2,length.out=nGenes-100),seq(1e-2,.2,length.out=50),seq(.2,1,length.out=50))
+#'    names(pScreen)=names(table(genes)) #discards genes that are not simulated
+#'    pConfirmation=matrix(runif(1000),nrow=1000,ncol=1)
+#'    rownames(pConfirmation)=transcripts
+#'    stageRObj <- stageRTx(pScreen=pScreen, pConfirmation=pConfirmation, tx2gene=tx2gene)
+#'    stageRObj <- stageWiseAdjustment(stageRObj, method="dte", alpha=0.05)
+#'
+#'    # tx with aggMethod lancaster
+#'    set.seed(1)
+#'    genes=paste0("gene",sample(1:200,1000,replace=TRUE))
+#'    nGenes=length(table(genes))
+#'    transcripts=paste0("tx",1:1000)
+#'    tx2gene=data.frame(transcripts,genes)
+#'    pScreen=NULL
+#'    pConfirmation=matrix(c(runif(100,1e-10,1e-4),runif(900)),nrow=1000,ncol=1)
+#'    rownames(pConfirmation)=transcripts
+#'    aggMethod="lancaster"
+#'    weights=seq(0,1,length=nrow(pConfirmation))
+#'    stageRObj <- stageRTx(pConfirmation=pConfirmation ,pScreenAdjusted=pScreenAdjusted, tx2gene=tx2gene)
+#'    stageRObj <- stageWiseAdjustment(stageRObj, method="dte", alpha=0.05, aggMethod=aggMethod, weights=weights)
+#'
 #' @name stageWiseAdjustment
 #' @rdname stageWiseAdjustment
 #' @aliases stageWiseAdjustment stageWiseAdjustment,stageR stageWiseAdjustment,stageRTx
@@ -575,20 +605,9 @@ setMethod("getSignificantGenes",signature=signature(object="stageRTx"),
               stop("adjust p-values first using stageWiseAdjustment")}
             if(class(object)!="stageRTx"){
               stop("this function only works on an object of class stageRTx")}
-            adjustedPValues <- getAdjustedPValues(object,
-                                                  onlySignificantGenes=FALSE,
-                                                  order=FALSE)
-            geneIDs <- adjustedPValues$geneID
-            pScreenAdjusted <- adjustedPValues[,"gene"]
-            significantGeneIDs <- which(pScreenAdjusted<=getAlpha(object))
-            significantGeneNames <- geneIDs[significantGeneIDs]
-            geneAdjustedPValues <- adjustedPValues[significantGeneIDs,"gene"]
-            dups <- duplicated(significantGeneNames)
-            significantGenes <- matrix(geneAdjustedPValues[!dups],
-                                       ncol=1,
-                                      dimnames=list(significantGeneNames[!dups],
-                                                    "FDR adjusted p-value"))
-            return(significantGenes)
+            padj <- getAdjustedPValues(object, onlySignificantGenes=TRUE, order=FALSE)
+            padjGene <- padj[padj$genePadj<=getAlpha(object),]
+            return(padjGene)
           })
 
 
@@ -626,17 +645,9 @@ setMethod("getSignificantTx",signature=signature(object="stageRTx"),
               stop("adjust p-values first using stageWiseAdjustment")}
             if(class(object)!="stageRTx"){
               stop("this function only works on an object of class stageRTx")}
-            adjustedPValues <- getAdjustedPValues(object,
-                                                  onlySignificantGenes=FALSE,
-                                                  order=FALSE)
-            txIDs <- adjustedPValues$txID
-            significantTxIDs <- which(adjustedPValues[,"transcript"]<=getAlpha(object))
-            significantTxNames <- txIDs[significantTxIDs]
-            significantTranscripts <- matrix(adjustedPValues[significantTxIDs,"transcript"],
-                                             ncol=1,
-                                             dimnames=list(significantTxNames,
-                                                           "stage-wise adjusted p-value"))
-            return(significantTranscripts)
+            padj <- getAdjustedPValues(object, onlySignificantGenes=TRUE, order=FALSE)
+            padjLong <- unnest(padj)
+            return(padjLong[padjLong$padj_SW<=getAlpha(object),])
           })
 
 #' Retrieve the significance level for the stage-wise adjustment.

@@ -3,6 +3,7 @@ library(stageR)
 
 context("Test the confirmation p-value correction methods.")
 
+## note that there is no screening selection (all genes pass).
 set.seed(723)
 pTest = matrix(runif(150,1e-10,1e-1),nrow=15,ncol=10, dimnames=list(paste0("gene",1:15), paste0("H",1:10)))
 pScreen = rep(1e-5,15) ; names(pScreen)=rownames(pTest)
@@ -18,8 +19,12 @@ pTestHolm = t(apply(pTest,1,function(row){
 }))
 colnames(pTestHolm)=paste0("H",1:10)
 
+hlp <- getAdjustedPValues(stageWiseAdjustment(stageRObj, method="holm",alpha=0.05), FALSE, FALSE)
+pHolmStageR <- do.call(rbind,lapply(map(hlp$data,t), function(x) as.numeric(x["padj_SW",])))
+dimnames(pHolmStageR) <- dimnames(pTestHolm)
+
 test_that("Test that Holm correction is correct",{
-  expect_equal(suppressWarnings(getAdjustedPValues(stageWiseAdjustment(stageRObj, method="holm",alpha=0.05), FALSE, FALSE)[,2:11]), pTestHolm)
+  expect_equal(pHolmStageR, pTestHolm, tolerance=1e-6)
 })
 
 ## user
@@ -33,8 +38,13 @@ pTestUser = t(apply(pTest,1,function(row){
 }))
 colnames(pTestUser)=paste0("H",1:10)
 
+hlp <- getAdjustedPValues(stageWiseAdjustment(stageRObj, method="user",alpha=0.05,adjustment=1:10), FALSE, FALSE)
+pUserStageR <- do.call(rbind,lapply(map(hlp$data,t), function(x) as.numeric(x["padj_SW",])))
+dimnames(pUserStageR) <- dimnames(pTestUser)
+
+
 test_that("Test that user correction is correct",{
-  expect_equal(suppressWarnings(getAdjustedPValues(stageWiseAdjustment(stageRObj, method="user",alpha=0.05, adjustment=1:10), FALSE, FALSE)[,2:11]), pTestUser)
+  expect_equal(pUserStageR, pTestUser, tolerance=1e-6)
 })
 
 ## none
@@ -48,12 +58,17 @@ pTestNone = t(apply(pTest,1,function(row){
 }))
 colnames(pTestNone)=paste0("H",1:10)
 
+hlp <- getAdjustedPValues(stageWiseAdjustment(stageRObj, method="none",alpha=0.05), FALSE, FALSE)
+pNoneStageR <- do.call(rbind,lapply(map(hlp$data,t), function(x) as.numeric(x["padj_SW",])))
+dimnames(pNoneStageR) <- dimnames(pTestNone)
+
+
 test_that("Test that none correction is correct",{
-  expect_equal(suppressWarnings(getAdjustedPValues(stageWiseAdjustment(stageRObj, method="none",alpha=0.05), FALSE, FALSE)[,2:11]), pTestNone)
+  expect_equal(pNoneStageR, pTestNone, tolerance=1e-6)
 })
 
 ## DTE
-pScreen=pScreen[1:9]
+pScreen=rep(1e-5,9)
 names(pScreen)=paste0("gene",1:9)
 pTx=pTest[,1,drop=FALSE]
 rownames(pTx)=paste0("transcript",1:15)
@@ -74,12 +89,17 @@ gene2PAdj[o] = cummax(pmin(gene2P[o]*c(3,3,2,1),1))
 geneOthers=rep(0,7)
 allAdjP=unname(c(gene1PAdj, gene2PAdj, geneOthers))
 
+#stageR
+stageRTxObjDTE <- stageWiseAdjustment(stageRTxObj, method="dte", alpha=0.05)
+hlp <- getAdjustedPValues(stageRTxObjDTE, FALSE, FALSE)
+pDTEStageR <- unlist(lapply(map(hlp$data,t), function(x) as.numeric(x["padj_SW",])))
+
 test_that("Test that DTE correction is correct",{
-  expect_equal(suppressWarnings(getAdjustedPValues(stageWiseAdjustment(stageRTxObj, method="dte",alpha=0.05), FALSE, FALSE))[,"transcript"], allAdjP)
+  expect_equal(pDTEStageR, allAdjP, tolerance=1e-6)
 })
 
 ## DTU
-pScreen=pScreen[1:2]
+pScreen=rep(1e-5,2)
 names(pScreen)=paste0("gene",1:2)
 pTx=pTest[1:8,1,drop=FALSE]/10
 rownames(pTx)=paste0("transcript",1:8)
@@ -101,8 +121,13 @@ gene2Back[o] = gene2PAdj
 
 allAdjP=unname(c(gene1Back, gene2Back))
 
+#stageR
+stageRTxObjDTU <- stageWiseAdjustment(stageRTxObj, method="dtu", alpha=0.05)
+hlp <- getAdjustedPValues(stageRTxObjDTU, FALSE, FALSE)
+pDTUStageR <- unlist(lapply(map(hlp$data,t), function(x) as.numeric(x["padj_SW",])))
+
 test_that("Test that DTU correction is correct",{
-  expect_equal(suppressWarnings(getAdjustedPValues(stageWiseAdjustment(stageRTxObj, method="dtu",alpha=0.05), FALSE, FALSE))[,"transcript"], allAdjP)
+  expect_equal(pDTUStageR, allAdjP, tolerance=1e-6)
 })
 
 rm(pTest, pScreen, stageRObj, pTestHolm, pTestUser, pTestNone, pTx, tx2gene, stageRTxObj, gene1P, o, gene1PAdj, gene2P, gene2PAdj, geneOthers, allAdjP, gene1Back, gene2Back)
