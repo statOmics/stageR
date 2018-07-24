@@ -27,6 +27,8 @@ This class is used for adjusting p-values with stage-wise testing for high-throu
 \item{\code{pScreenAdjusted}}{logical, indicating whether the supplied p-values for the screening hypothesis have already been adjusted for multiplicity according to the FDR.}
 
 \item{\code{tx2gene}}{matrix with transcript IDs in the first column and gene IDs in the second column to be used for DTE and DTU analysis. All rownames from \code{pConfirmation} should match with a transcript ID and all names from \code{pScreen} should match with a gene ID.}
+
+\item{\code{aggMethod}}{the method to use to aggregate p-values to obtain a single gene-level p-value for every gene, which combines evidence across the transcripts (or hypotheses) of interest.}
 }}
 
 \references{

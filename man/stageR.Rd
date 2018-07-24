@@ -4,7 +4,7 @@
 \alias{stageR}
 \title{Create stageR object}
 \usage{
-stageR(pScreen, pConfirmation, pScreenAdjusted = FALSE)
+stageR(pScreen = NULL, pConfirmation, pScreenAdjusted = FALSE)
 }
 \arguments{
 \item{pScreen}{A vector of screening hypothesis p-values.}
@@ -13,7 +13,7 @@ stageR(pScreen, pConfirmation, pScreenAdjusted = FALSE)
 
 \item{pScreenAdjusted}{logical, indicating whether the supplied p-values for the screening hypothesis have already been adjusted for multiplicity according to the FDR.}
 
-\item{...}{Additional arguments.}
+\item{...}{Additional arguments, see \code{\link{stageRClass}}.}
 }
 \value{
 An instance of an object of the \code{\link{stageRClass}}

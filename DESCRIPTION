@@ -31,4 +31,5 @@ VignetteBuilder: knitr
 Imports: methods,
 	  stats,
     tidyverse,
-    reshape2
+    reshape2,
+    aggregation

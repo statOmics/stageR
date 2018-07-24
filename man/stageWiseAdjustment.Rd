@@ -12,7 +12,7 @@
 stageWiseAdjustment(object, method, alpha, ...)
 
 \S4method{stageWiseAdjustment}{stageR,character,numeric}(object, method, alpha,
-  adjustment = NULL, ...)
+  adjustment = NULL, weights = NULL, ...)
 
 \S4method{stageWiseAdjustment}{stageRTx,character,numeric}(object, method,
   alpha, tx2gene, ...)
@@ -28,7 +28,11 @@ stageWiseAdjustment(object, method, alpha, ...)
 
 \item{adjustment}{a user-defined adjustment of the confirmation stage p-values. Only applicable when \code{method} is \code{"user"} and ignored otherwise.}
 
+\item{weights}{The weights to use in p-value aggregation when \code{aggMethod} is \code{"lancaster"}. Note that this is only applicable for transcript-level data. Typically, these are set to the base mean expression of the transcript, as suggested in Yi et al. (2018).}
+
 \item{tx2gene}{Only applicable when  \code{method} is \code{"dte"} or \code{"dtu"}.  A \code{\link[base]{data.frame}} with transcript IDs in the first column and gene IDs in the second column. The rownames from \code{pConfirmation} must be contained in the transcript IDs from \code{tx2gene}, and the names from \code{pScreen} must be contained in the gene IDs.}
+
+\item{aggMethod}{The method to use to aggregate p-values across hypotheses. Only applicable when \code{pScreen} is not provided. Options are \code{"sidak"}, \code{"fisher"}, and \code{"lancaster"}, as provided by the \code{aggregation} R package from Yi et al. (2018).}
 }
 \value{
 A stageR/stageRTx object with stage-wise adjusted p-values.
@@ -51,9 +55,13 @@ stageRObj <- stageWiseAdjustment(stageRObj, method="holm", alpha=0.05)
 getAdjustedPValues(stageRObj, onlySignificantGenes=TRUE, order=TRUE)
 }
 \references{
-Van den Berge K., Soneson C., Robinson M.D., Clement L. (2017). stageR: a general stage-wise method for controlling the gene-level false discovery rate in differential expression and differential transcript usage. Genome Biology 18:151. https://doi.org/10.1186/s13059-017-1277-0
+Van den Berge K., Soneson C., Robinson M.D., and Clement L. (2017). stageR: a general stage-wise method for controlling the gene-level false discovery rate in differential expression and differential transcript usage. Genome Biology 18:151. https://doi.org/10.1186/s13059-017-1277-0
+
 R. Heller, E. Manduchi, G. R. Grant, and W. J. Ewens, "A flexible two-stage procedure for identifying gene sets that are differentially expressed." Bioinformatics (Oxford, England), vol. 25, pp. 1019-25, 2009.
 
 S. Holm, "A Simple Sequentially Rejective Multiple Test Procedure," Scandinavian Journal of Statistics, vol. 6, no. 2, pp. 65-70, 1979.
+
 J. P. Shaffer, "Modified Sequentially Rejective Multiple Test Procedures," Journal of the American Statistical Association, vol. 81, p. 826, 1986.
+
+L. Yi, H. Pimentel, N.L. Bray, and L. Pachter, "Gene-level differential analysis at transcript-level resolution." Genome Biology 19:53, 2018.
 }

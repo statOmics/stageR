@@ -7,7 +7,7 @@
 #' @param pScreen A vector of screening hypothesis p-values.
 #' @param pConfirmation A matrix of confirmation hypothesis p-values. When constructing a \code{\link{stageRClass}} object, the number of rows should be equal to the length of \code{pScreen}. For a \code{\link{stageRTxClass}} object, the dimensions can be different.
 #' @param pScreenAdjusted logical, indicating whether the supplied p-values for the screening hypothesis have already been adjusted for multiplicity according to the FDR.
-#' @param ... Additional arguments.
+#' @param ... Additional arguments, see \code{\link{stageRClass}}.
 #' @return An instance of an object of the \code{\link{stageRClass}}
 #' @references
 #' Van den Berge K., Soneson C., Robinson M.D., Clement L. (2017). stageR: a general stage-wise method for controlling the gene-level false discovery rate in differential expression and differential transcript usage. Genome Biology 18:151. https://doi.org/10.1186/s13059-017-1277-0
@@ -18,15 +18,15 @@
 #' @name stageR
 #' @rdname stageR
 #' @export
-#setMethod("stageR", signature=signature(pScreen="numeric", pConfirmation="matrix"),
-#         definition=function(pScreen, pConfirmation, pScreenAdjusted=FALSE){
-stageR <- function(pScreen, pConfirmation, pScreenAdjusted=FALSE){
-  if(length(pScreen)!=nrow(pConfirmation))
-    stop("The number of screening hypothesis p-values must be equal to the number of rows in pConfirmation.")
-  if(!identical(as.character(names(pScreen)),as.character(rownames(pConfirmation))))
-    warning("The features (names) in pScreen are not identical to the features (rownames) in pConfirmation.")
+stageR <- function(pScreen=NULL, pConfirmation, pScreenAdjusted=FALSE){
+  if(!is.null(pScreen)){
+    if(length(pScreen)!=nrow(pConfirmation))
+      stop("The number of screening hypothesis p-values must be equal to the number of rows in pConfirmation.")
+    if(!identical(as.character(names(pScreen)),as.character(rownames(pConfirmation))))
+      warning("The features (names) in pScreen are not identical to the features (rownames) in pConfirmation.")
+  }
   stageR <- new("stageR")
-  stageR@pScreen <- pScreen
+  if(!is.null(pScreen)) stageR@pScreen <- pScreen
   stageR@pConfirmation <- pConfirmation
   stageR@pScreenAdjusted <- pScreenAdjusted
   stageR@adjusted <- FALSE
@@ -42,7 +42,7 @@ stageR <- function(pScreen, pConfirmation, pScreenAdjusted=FALSE){
 #' @param pConfirmation A matrix of confirmation hypothesis p-values. The number of rows should be equal to the length of \code{pScreen}.
 #' @param pScreenAdjusted logical, indicating whether the supplied p-values for the screening hypothesis have already been adjusted for multiplicity according to the FDR.
 #' @param tx2gene Only applicable for transcript-level analysis. A \code{\link[base]{data.frame}} with transcript IDs in the first columns and gene IDs in the second column. The rownames from \code{pConfirmation} must be contained in the transcript IDs from \code{tx2gene}, and the names from \code{pScreen} must be contained in the gene IDs.
-#' @param ... Additional arguments.
+#' @param ... Additional arguments, see \code{\link{stageRTxClass}}.
 #' @return An instance of an object of the \code{\link{stageRTxClass}}
 #' @references
 #' Van den Berge K., Soneson C., Robinson M.D., Clement L. (2017). stageR: a general stage-wise method for controlling the gene-level false discovery rate in differential expression and differential transcript usage. Genome Biology 18:151. https://doi.org/10.1186/s13059-017-1277-0
@@ -54,13 +54,15 @@ stageR <- function(pScreen, pConfirmation, pScreenAdjusted=FALSE){
 #' @name stageRTx
 #' @rdname stageRTx
 #' @export
-stageRTx <- function(pScreen, pConfirmation, pScreenAdjusted=FALSE, tx2gene){
-  if(any(is.na(match(rownames(pConfirmation),tx2gene[,1]))))
-    stop("not all transcript names in pConfirmation match with a transcript ID from the tx2gene object.")
-  if(any(is.na(match(names(pScreen),tx2gene[,2]))))
-    stop("not all gene names in pScreen match with a gene ID from the tx2gene object.")
+stageRTx <- function(pScreen=NULL, pConfirmation, pScreenAdjusted=FALSE, tx2gene){
+  if(!is.null(pScreen)){
+    if(any(is.na(match(rownames(pConfirmation),tx2gene[,1]))))
+      stop("not all transcript names in pConfirmation match with a transcript ID from the tx2gene object.")
+    if(any(is.na(match(names(pScreen),tx2gene[,2]))))
+      stop("not all gene names in pScreen match with a gene ID from the tx2gene object.")
+  }
   stageR <- new("stageRTx")
-  stageR@pScreen <- pScreen
+  if(!is.null(pScreen)) stageR@pScreen <- pScreen
   stageR@pConfirmation <- pConfirmation
   stageR@pScreenAdjusted <- pScreenAdjusted
   stageR@adjusted <- FALSE

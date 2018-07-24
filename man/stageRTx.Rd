@@ -4,7 +4,7 @@
 \alias{stageRTx}
 \title{Create stageRTx object.}
 \usage{
-stageRTx(pScreen, pConfirmation, pScreenAdjusted = FALSE, tx2gene)
+stageRTx(pScreen = NULL, pConfirmation, pScreenAdjusted = FALSE, tx2gene)
 }
 \arguments{
 \item{pScreen}{A vector of screening hypothesis p-values.}
@@ -15,7 +15,7 @@ stageRTx(pScreen, pConfirmation, pScreenAdjusted = FALSE, tx2gene)
 
 \item{tx2gene}{Only applicable for transcript-level analysis. A \code{\link[base]{data.frame}} with transcript IDs in the first columns and gene IDs in the second column. The rownames from \code{pConfirmation} must be contained in the transcript IDs from \code{tx2gene}, and the names from \code{pScreen} must be contained in the gene IDs.}
 
-\item{...}{Additional arguments.}
+\item{...}{Additional arguments, see \code{\link{stageRTxClass}}.}
 }
 \value{
 An instance of an object of the \code{\link{stageRTxClass}}
