@@ -24,8 +24,8 @@ vignette: >
 The release version of the package is hosted on Bioconductor, and can be installed with the following code
 
 ```{r}
-source("https://bioconductor.org/biocLite.R")
-biocLite("stageR")
+#source("https://bioconductor.org/biocLite.R")
+#biocLite("stageR")
 ```
   
 The development version of the package is hosted on GitHub and can be installed with the `devtools` library using `devtools::install_github("statOmics/stageR")`. A couple of stable releases can be found in the 'Releases' tab on GitHub.
