@@ -1,7 +1,7 @@
 #' @include stageRClasses.R allGenerics.R constructors.R
 #' @import tidyverse dplyr
 
-.createGeneTibble <- function(pScreen=NULL, pConfirmation, tx2gene=NULL, weights=NULL){
+.createGeneTibble <- function(pScreen=NULL, pConfirmation, tx2gene=NULL, weights=NULL, pScreenAdjusted){
   require(tidyverse) ; require(reshape2)
 
   if(is.null(tx2gene)){
@@ -10,7 +10,7 @@
     df <- reshape2::melt(df, id.vars="geneID", variable.name="hypothesis", value.name="pvalue")
     nestedDf <- df %>% group_by(geneID) %>% nest(.key="data")
   } else { #transcript data
-    df <- data.frame(txID=tx2gene[,1], geneID=tx2gene[,2], pvalue=pConfirmation[as.character(tx2gene[,1]),])
+    df <- data.frame(txID=tx2gene[as.character(tx2gene[,1])%in%rownames(pConfirmation),1], geneID=tx2gene[as.character(tx2gene[,1])%in%rownames(pConfirmation),2], pvalue=pConfirmation[as.character(tx2gene[as.character(tx2gene[,1])%in%rownames(pConfirmation),1]),])
     # note that weights are only applicable on tx-level data.
     if(!is.null(weights)) df$weights <- weights
     nestedDf <- df %>% group_by(geneID) %>% nest(.key="data")
@@ -143,7 +143,7 @@
   method <- match.arg(method,c("none","holm","dte","dtu","user"))
 
   # create nested data frame
-  geneTibble <- .createGeneTibble(pScreen=pScreen, pConfirmation=pConfirmation, tx2gene=tx2gene, weights=weights)
+  geneTibble <- .createGeneTibble(pScreen=pScreen, pConfirmation=pConfirmation, tx2gene=tx2gene, weights=weights, pScreenAdjusted=pScreenAdjusted)
 
   # aggregate p-values to obtain screening stage p-value.
   aggMethod <- match.arg(aggMethod,c("sidak","fisher","lancaster"))
