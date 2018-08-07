@@ -205,7 +205,7 @@ dxd <- DEXSeqDataSet(countData = exprs(esetProstate),
                      groupID = as.character(geneForEachTx))
 dxd <- estimateSizeFactors(dxd)
 dxd <- estimateDispersions(dxd)
-dxd <- nbinomLRT(dxd, reduced=~ sample + exon + patient)
+dxd <- testForDEU(dxd, reducedModel=~ sample + exon + patient)
 dxr <- DEXSeqResults(dxd)
 qvalDxr <- perGeneQValue(dxr)
 ```
