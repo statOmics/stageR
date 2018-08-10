@@ -216,7 +216,7 @@
 
   # calculate BH-adjusted s.l.
   G <- length(padjScreen) #nr of genes
-  R <- sum(padjScreen<=alpha) #nr of rejections
+  R <- sum(padjScreen<=alpha, na.rm=TRUE) #nr of rejections
   alphaAdjusted <- R/G*alpha
 
   # correct FWER-adjusted p-values acc. to BH-adjusted s.l.
