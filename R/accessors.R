@@ -209,10 +209,59 @@
            a gene ID from the tx2gene object.")
     }
 
+<<<<<<< HEAD
     geneTibbleStageII <- geneTibbleStageI
     geneTibbleStageII$data <- map(geneTibbleStageI$data, .dtuAdjustment)
 
   } else stop("specify a valid method for the confirmation stage.")
+=======
+.getAdjustedP <- function(object, onlySignificantGenes=FALSE, order=TRUE){
+  ## this function is used in getAdjustedPValues
+  ## to return the adjusted p-values for a stageR class.
+  message(paste0("The returned adjusted p-values are based on a ",
+                 "stage-wise testing approach and are only valid for ",
+                 "the provided target OFDR level of ",
+                 getAlpha(object)*100,
+                 "%. If a different target OFDR level is of interest,",
+                 "the entire adjustment should be re-run. \n"))
+  if(onlySignificantGenes){ #significant genes
+    genesStageI <- object@adjustedP[,"padjScreen"]<=getAlpha(object)
+    if(sum(genesStageI)==0){
+      message(paste0("No genes were found to be significant on a ",
+                     alpha*100,"% OFDR level."))
+    } else {
+      if(order){
+        sigGenes <- object@adjustedP[genesStageI,]
+        o <- order(sigGenes[,"padjScreen"])
+        return(sigGenes[o,])
+      } else {
+        sigGenes <- object@adjustedP[genesStageI,]
+        return(sigGenes)
+      }
+    }
+  } else { #all genes
+    if(order){
+      o <- order(object@adjustedP[,"padjScreen"])
+      return(object@adjustedP[o,])
+    } else {
+      return(object@adjustedP)
+    }
+  }
+}
+
+.getAdjustedPTx <- function(object, onlySignificantGenes=FALSE, order=TRUE){
+  ## this function is used in getAdjustedPValues
+  ## to return the adjusted p-values for a stageRTx class.
+  message(paste0("The returned adjusted p-values are based on a ",
+                 "stage-wise testing approach and are only valid for ",
+                 "the provided target OFDR level of ",
+                 getAlpha(object)*100,
+                 "%. If a different target OFDR level is of interest,",
+                 "the entire adjustment should be re-run. \n"))
+  tx2gene <- getTx2gene(object)
+  pConfirmation <- getPConfirmation(object)
+  geneForEachTx <- tx2gene[match(rownames(pConfirmation),tx2gene[,1]),2]
+>>>>>>> 4bb99be791766fc03fb6ef5c3201025cfc5124ca
 
   # calculate BH-adjusted s.l.
   G <- length(padjScreen) #nr of genes

@@ -54,6 +54,7 @@ stageR <- function(pScreen=NULL, pConfirmation, pScreenAdjusted=FALSE){
 #' @name stageRTx
 #' @rdname stageRTx
 #' @export
+<<<<<<< HEAD
 stageRTx <- function(pScreen=NULL, pConfirmation, pScreenAdjusted=FALSE, tx2gene){
   if(!is.null(pScreen)){
     if(any(is.na(match(rownames(pConfirmation),tx2gene[,1]))))
@@ -61,6 +62,14 @@ stageRTx <- function(pScreen=NULL, pConfirmation, pScreenAdjusted=FALSE, tx2gene
     if(any(is.na(match(names(pScreen),tx2gene[,2]))))
       stop("not all gene names in pScreen match with a gene ID from the tx2gene object.")
   }
+=======
+stageRTx <- function(pScreen, pConfirmation, pScreenAdjusted=FALSE, tx2gene){
+  if(is.null(names(pScreen))) stop("pScreen does not have names, please set the names of the corresponding genes to the pScreen vector.")
+  if(any(is.na(match(rownames(pConfirmation),tx2gene[,1]))))
+    stop("not all transcript names in pConfirmation match with a transcript ID from the tx2gene object.")
+  if(any(is.na(match(names(pScreen),tx2gene[,2]))))
+    stop("not all gene names in pScreen match with a gene ID from the tx2gene object.")
+>>>>>>> 4bb99be791766fc03fb6ef5c3201025cfc5124ca
   stageR <- new("stageRTx")
   if(!is.null(pScreen)) stageR@pScreen <- pScreen
   stageR@pConfirmation <- pConfirmation
