@@ -425,7 +425,7 @@ setMethod("getPConfirmation",signature=signature(object="stageRTx"),
   if(onlySignificantGenes){ #significant genes
       if(order){
         padj <- object@adjustedP
-        o <- order(padj$genePval)
+        o <- order(padj$genePadj)
         return(padj[o,])
       } else {
         return(object@adjustedP)
@@ -435,7 +435,7 @@ setMethod("getPConfirmation",signature=signature(object="stageRTx"),
     padj <- object@adjustedP
     tibble$data[match(padj$geneID,tibble$geneID)] <- padj$data
     if(order){
-      o <- order(tibble$genePval)
+      o <- order(tibble$genePadj)
       return(tibble[o,])
     } else {
       return(tibble)
