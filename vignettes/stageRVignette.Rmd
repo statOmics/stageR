@@ -24,9 +24,9 @@ vignette: >
 The release version of the package is hosted on Bioconductor, and can be installed with the following code
 
 ```{r}
-if (!requireNamespace("BiocManager", quietly=TRUE))
-    install.packages("BiocManager")
-BiocManager::install("stageR")
+#if (!requireNamespace("BiocManager", quietly=TRUE))
+#    install.packages("BiocManager")
+#BiocManager::install("stageR")
 ```
   
 The development version of the package is hosted on GitHub and can be installed with the `devtools` library using `devtools::install_github("statOmics/stageR")`.

@@ -24,8 +24,14 @@ In its most basic form, it consists of a vector of p-values for the screening hy
 }
 \examples{
 # create a \\code{\\link{stageRClass}} object
-stageRObj <- stageR(pScreen=runif(10), pConfirmation=matrix(runif(30),nrow=10,ncol=3))
-stageRObj <- stageRTx(pScreen=runif(10), pConfirmation=matrix(runif(30),nrow=10,ncol=3), tx2gene=data.frame(transcripts=paste0("transcript",1:10),genes=paste0("gene",rep(1:2,each=5))))
+pScreen <- runif(10)
+names(pScreen) <- paste0("gene",1:10)
+pConfirmation <- matrix(runif(30),nrow=10,ncol=3)
+rownames(pConfirmation) <-  paste0("gene",1:10)
+stageRObj <- stageR(pScreen=pScreen, pConfirmation=pConfirmation)
+pConfirmationTx <- matrix(runif(10),ncol=1)
+names(pScreen) <- paste0("gene",rep(1:2,each=5))
+stageRObj <- stageRTx(pScreen=pScreen, pConfirmation=pConfirmationTx, tx2gene=data.frame(transcripts=paste0("transcript",1:10),genes=paste0("gene",rep(1:2,each=5))))
 }
 \references{
 Van den Berge K., Soneson C., Robinson M.D., Clement L. (2017). stageR: a general stage-wise method for controlling the gene-level false discovery rate in differential expression and differential transcript usage. Genome Biology 18:151. https://doi.org/10.1186/s13059-017-1277-0

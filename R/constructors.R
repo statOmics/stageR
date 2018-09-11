@@ -13,8 +13,14 @@
 #' Van den Berge K., Soneson C., Robinson M.D., Clement L. (2017). stageR: a general stage-wise method for controlling the gene-level false discovery rate in differential expression and differential transcript usage. Genome Biology 18:151. https://doi.org/10.1186/s13059-017-1277-0
 #' @examples
 #' # create a \code{\link{stageRClass}} object
-#' stageRObj <- stageR(pScreen=runif(10), pConfirmation=matrix(runif(30),nrow=10,ncol=3))
-#' stageRObj <- stageRTx(pScreen=runif(10), pConfirmation=matrix(runif(30),nrow=10,ncol=3), tx2gene=data.frame(transcripts=paste0("transcript",1:10),genes=paste0("gene",rep(1:2,each=5))))
+#' pScreen <- runif(10)
+#' names(pScreen) <- paste0("gene",1:10)
+#' pConfirmation <- matrix(runif(30),nrow=10,ncol=3)
+#' rownames(pConfirmation) <-  paste0("gene",1:10)
+#' stageRObj <- stageR(pScreen=pScreen, pConfirmation=pConfirmation)
+#' pConfirmationTx <- matrix(runif(10),ncol=1)
+#' names(pScreen) <- paste0("gene",rep(1:2,each=5))
+#' stageRObj <- stageRTx(pScreen=pScreen, pConfirmation=pConfirmationTx, tx2gene=data.frame(transcripts=paste0("transcript",1:10),genes=paste0("gene",rep(1:2,each=5))))
 #' @name stageR
 #' @rdname stageR
 #' @export
@@ -47,10 +53,15 @@ stageR <- function(pScreen, pConfirmation, pScreenAdjusted=FALSE){
 #' @references
 #' Van den Berge K., Soneson C., Robinson M.D., Clement L. (2017). stageR: a general stage-wise method for controlling the gene-level false discovery rate in differential expression and differential transcript usage. Genome Biology 18:151. https://doi.org/10.1186/s13059-017-1277-0
 #' @examples
-#' # create a stageRClass object
-#' stageRObj <- stageR(pScreen=runif(10), pConfirmation=matrix(runif(30),nrow=10,ncol=3))
-#' # create a stageRTxClass object
-#' stageRObj <- stageRTx(pScreen=runif(10), pConfirmation=matrix(runif(30),nrow=10,ncol=3), tx2gene=data.frame(transcripts=paste0("transcript",1:10),genes=paste0("gene",rep(1:2,each=5))))
+#' # create a \code{\link{stageRClass}} object
+#' pScreen <- runif(10)
+#' names(pScreen) <- paste0("gene",1:10)
+#' pConfirmation <- matrix(runif(30),nrow=10,ncol=3)
+#' rownames(pConfirmation) <-  paste0("gene",1:10)
+#' stageRObj <- stageR(pScreen=pScreen, pConfirmation=pConfirmation)
+#' pConfirmationTx <- matrix(runif(10),ncol=1)
+#' names(pScreen) <- paste0("gene",rep(1:2,each=5))
+#' stageRObj <- stageRTx(pScreen=pScreen, pConfirmation=pConfirmationTx, tx2gene=data.frame(transcripts=paste0("transcript",1:10),genes=paste0("gene",rep(1:2,each=5))))
 #' @name stageRTx
 #' @rdname stageRTx
 #' @export
@@ -92,6 +103,4 @@ setValidity("stageRTx",function(object){
     message("NA confirmation stage p-values are not allowed.")
 
 })
-
-
 
