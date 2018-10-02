@@ -129,9 +129,15 @@
     # adjusted p-values for screening hypothesis
     padjScreenReturn <- padjScreen[geneForEachTx]
     # adjusted p-values for confirmation hypothesis
-    idCon <- names(unlist(txLevelAdjustments))
+    #idCon <- names(unlist(txLevelAdjustments))
     # replace '.' by ':' in names to avoid confusion with ENSEMBL version names
-    idCon <- gsub(x=idCon,pattern=".",replacement=":",fixed=TRUE)
+    #idCon <- gsub(x=idCon,pattern=".",replacement=":",fixed=TRUE)
+    namesList=names(txLevelAdjustments)
+    namesListElements=lapply(txLevelAdjustments,names)
+    idCon <- unlist(sapply(seq_len(length(namesList)), function(ii){
+      gsub(x=paste(namesList[ii],namesListElements[[ii]]),
+           pattern=" ",replace=":")
+    }))
     pAdjConfirmation[idCon,1] <- unlist(txLevelAdjustments)
 
   } else if(method=="dtu"){
@@ -170,9 +176,15 @@
     # adjusted p-values for screening hypothesis
     padjScreenReturn <- padjScreen[as.character(geneForEachTx)]
     # adjusted p-values for confirmation hypothesis
-    idCon <- names(unlist(txLevelAdjustments))
+    #idCon <- names(unlist(txLevelAdjustments))
     # replace '.' by ':' in names to avoid confusion with ENSEMBL version names
-    idCon <- gsub(x=idCon,pattern=".",replacement=":",fixed=TRUE)
+    #idCon <- gsub(x=idCon,pattern=".",replacement=":",fixed=TRUE)
+    namesList=names(txLevelAdjustments)
+    namesListElements=lapply(txLevelAdjustments,names)
+    idCon <- unlist(sapply(seq_len(length(namesList)), function(ii){
+      gsub(x=paste(namesList[ii],namesListElements[[ii]]),
+                  pattern=" ",replace=":")
+    }))
     pAdjConfirmation[idCon,1] <- unlist(txLevelAdjustments)
 
   } else stop("method must be either one of 'holm' or ... ")
