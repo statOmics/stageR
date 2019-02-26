@@ -171,12 +171,12 @@
   if(method=="none"){
 
     geneTibbleStageII <- geneTibbleStageI
-    geneTibbleStageII$data <- map(geneTibbleStageI$data, .noAdjustment)
+    geneTibbleStageII$data <- purrr::map(geneTibbleStageI$data, .noAdjustment)
 
   } else if(method=="holm"){
 
     geneTibbleStageII <- geneTibbleStageI
-    geneTibbleStageII$data <- map(geneTibbleStageI$data, .holmAdjustment)
+    geneTibbleStageII$data <- purrr::map(geneTibbleStageI$data, .holmAdjustment)
 
   } else if(method=="user"){
     if(length(adjustment)!=ncol(pConfirmation)){
@@ -184,7 +184,7 @@
     }
 
     geneTibbleStageII <- geneTibbleStageI
-    geneTibbleStageII$data <- map(geneTibbleStageI$data, .userAdjustment,  adjustment=adjustment)
+    geneTibbleStageII$data <- purrr::map(geneTibbleStageI$data, .userAdjustment,  adjustment=adjustment)
 
   } else if(method=="dte"){
     if(any(is.na(match(rownames(pConfirmation),tx2gene[,1])))){
@@ -197,7 +197,7 @@
     }
 
     geneTibbleStageII <- geneTibbleStageI
-    geneTibbleStageII$data <- map(geneTibbleStageI$data, .dteAdjustment)
+    geneTibbleStageII$data <- purrr::map(geneTibbleStageI$data, .dteAdjustment)
 
   } else if(method=="dtu"){
     if(any(is.na(match(rownames(pConfirmation),tx2gene[,1])))){
@@ -210,7 +210,7 @@
     }
 
     geneTibbleStageII <- geneTibbleStageI
-    geneTibbleStageII$data <- map(geneTibbleStageI$data, .dtuAdjustment)
+    geneTibbleStageII$data <- purrr::map(geneTibbleStageI$data, .dtuAdjustment)
 
   } else stop("specify a valid method for the confirmation stage.")
 
