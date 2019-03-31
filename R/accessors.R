@@ -219,7 +219,7 @@
     genesStageI <- object@adjustedP[,"padjScreen"]<=getAlpha(object)
     if(sum(genesStageI)==0){
       message(paste0("No genes were found to be significant on a ",
-                     alpha*100,"% OFDR level."))
+                     getAlpha(object)*100,"% OFDR level."))
     } else {
       if(order){
         sigGenes <- object@adjustedP[genesStageI,]
@@ -257,7 +257,7 @@
     genesStageI <- which(object@adjustedP[,"gene"]<=getAlpha(object))
     if(sum(genesStageI)==0){
       message(paste0("No genes were found to be significant on a ",
-                     alpha*100,"% OFDR level."))
+                     getAlpha(object)*100,"% OFDR level."))
     } else {
       if(order){ #sort
         ordGenes <- order(object@adjustedP[genesStageI,1])
