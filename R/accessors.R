@@ -7,11 +7,21 @@
 
   if(allowNA){
     if(any(is.na(pScreen))){
-      naFeatures <- which(is.na(pScreen))
-      message(paste0("Removing ",length(naFeatures),
-                     " features with NA screening hypothesis p-values. \n"))
-      pScreen <- pScreen[-naFeatures]
-      pConfirmation <- pConfirmation[-naFeatures,]
+      if(is.null(tx2gene)){ #DGE analysis
+        naFeatures <- which(is.na(pScreen))
+        message(paste0("Removing ",length(naFeatures),
+                       " features with NA screening hypothesis p-values. \n"))
+        pScreen <- pScreen[-naFeatures]
+        pConfirmation <- pConfirmation[-naFeatures,]
+      } else { #tx-level analysis
+        naFeatures <- which(is.na(pScreen))
+        message(paste0("Removing ",length(naFeatures),
+                       " genes with NA screening hypothesis p-values. \n"))
+        naGenes <- names(pScreen)[naFeatures]
+        naTx <- as.character(tx2gene[tx2gene[,2] %in% naGenes,1])
+        pScreen <- pScreen[!names(pScreen) %in% naGenes]
+        pConfirmation <- pConfirmation[!rownames(pConfirmation) %in% naTx,,drop=FALSE]
+      }
     }
   }
 
