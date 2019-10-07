@@ -213,7 +213,8 @@
     pAdjStage <- cbind(pAdjConfirmation,padjScreenReturn)[,2:1]
     colnames(pAdjStage) <- c("gene","transcript")
   }
-  return(list(pAdjStage=pAdjStage, alphaAdjusted=alphaAdjusted))
+  return(list(pAdjStage=pAdjStage, alphaAdjusted=alphaAdjusted,
+              pScreen=pScreen, pConfirmation=pConfirmation))
 }
 
 .getAdjustedP <- function(object, onlySignificantGenes=FALSE, order=TRUE){
@@ -376,6 +377,9 @@ setMethod("stageWiseAdjustment",signature=signature(object="stageR",
                                               method=method,
                                               pScreenAdjusted=pScreenAdjusted,
                                               adjustment=adjustment, ...)
+            # if allowNA=TRUE, pScreen and pConfirmation may have been filtered
+            object@pScreen <- stageAdjPValues[["pScreen"]]
+            object@pConfirmation <- stageAdjPValues[["pConfirmation"]]
             object@adjustedP <- stageAdjPValues[["pAdjStage"]]
             object@alphaAdjusted <- stageAdjPValues[["alphaAdjusted"]]
             object@method <- method
@@ -406,9 +410,11 @@ setMethod(
         tx2gene = tx2gene,
         ...
       )
+    # if allowNA=TRUE, pScreen and pConfirmation may have been filtered
+    object@pScreen <- stageAdjPValues[["pScreen"]]
+    object@pConfirmation <- stageAdjPValues[["pConfirmation"]]
     object@adjustedP <- stageAdjPValues[["pAdjStage"]]
-    object@alphaAdjusted <-
-      stageAdjPValues[["alphaAdjusted"]]
+    object@alphaAdjusted <- stageAdjPValues[["alphaAdjusted"]]
     object@method <- method
     object@alpha <- alpha
     object@adjusted <- TRUE
