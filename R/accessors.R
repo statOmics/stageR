@@ -109,6 +109,12 @@
   } else if(aggMethod=="lancaster"){
     aggMethod <- get(aggMethod)
     pScreen <- unlist(map(geneTibble$data, function(x) aggMethod(x$pvalue, weights=x$weights)))
+  } else if(aggMethod == "harmonicmeanp"){
+    require(harmonicmeanp)
+    pScreen <- unlist(map(geneTibble$data, function(x) p.hmp(x$pvalue)))
+  } else if(aggMethod == "harmonicmeanp_weighted"){
+    require(harmonicmeanp)
+    pScreen <- unlist(map(geneTibble$data, function(x) p.hmp(x$pvalue, w=x$weights)))
   }
   geneTibble$genePval <- pScreen
   return(geneTibble)
