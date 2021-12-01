@@ -1,5 +1,7 @@
 # stageR
 
+## stage-wise analysis of high-throughput genomic data with omnibus and posthoc tests
+
 This is the repository for the stageR package. stageR allows user-friendly automated stage-wise analysis of high-throughput genomic data.
 
 See the [Bioconductor website](https://bioconductor.org/packages/release/bioc/html/stageR.html) to install the package through Bioconductor.
