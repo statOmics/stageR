@@ -71,6 +71,8 @@ stageRTx <- function(pScreen, pConfirmation, pScreenAdjusted=FALSE, tx2gene){
     stop("not all transcript names in pConfirmation match with a transcript ID from the tx2gene object.")
   if(any(is.na(match(names(pScreen),tx2gene[,2]))))
     stop("not all gene names in pScreen match with a gene ID from the tx2gene object.")
+  if(class(tx2gene[,1]) == "factor" | class(tx2gene[,2]) == "factor")
+    stop("columns of tx2gene should be character, not factor")
   stageR <- new("stageRTx")
   stageR@pScreen <- pScreen
   stageR@pConfirmation <- pConfirmation
