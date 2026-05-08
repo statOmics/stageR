@@ -112,12 +112,12 @@ In total, `r length(uniqueGenesRegular)` genes are found to be differentially ex
 ## Stage-wise analysis
 
 The stage-wise analysis first considers an omnibus test that tests whether any of the three contrasts are significant, i.e. it tests whether there has been any effect of the treatment whatsoever.
-For the screening hypothesis, we use the `topTableF` function from the `limma` package to perform an F-test across the three contrasts. The screening hypothesis p-values are then stored in the vector `pScreen`.
+For the screening hypothesis, we use the `topTable` function from the `limma` package to perform an F-test across the three contrasts. The screening hypothesis p-values are then stored in the vector `pScreen`.
 
 ```{r}
 alpha <- 0.05
 nGenes <- nrow(dge)
-tableF <- topTableF(fit2, number=nGenes, sort.by="none") #screening hypothesis
+tableF <- topTable(fit2, number=nGenes, sort.by="none") #screening hypothesis
 pScreen <- tableF$P.Value
 names(pScreen) = rownames(tableF)
 ```
